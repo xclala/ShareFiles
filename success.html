@@ -1,29 +1,43 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="ch">
+
 <head>
     <meta charset="UTF-8">
     <title>成功上传</title>
 </head>
 <div contentEditable="true">
-<body>
-    <style>
 
-    body {
-        background-color:black;
-    }
+    <body>
+        <style>
+            body {
+                background-color: black;
+            }
 
-    b {
-        color: red;
-        text-align: center;
-    }
-      i {
-        color: gold;
-        text-align: center;
-    }
+            b {
+                color: red;
+                text-align: center;
+            }
 
-    </style>
-    <b>文件成功上传！</b>
-    <i>文件名：<b>{{ name }}</b></i>
+            i {
+                color: gold;
+                text-align: center;
+            }
+        </style>
+        <script>
+            function dark() {
+                document.body.style.backgroundColor = "black"
+            }
+
+            function light() {
+                document.body.style.backgroundColor = "#d0e4fe"
+            }
+        </script>
+        <button type="button" onclick="dark()">深色模式</button>
+        <button type="button" onclick="light()">浅色模式</button>
+        <p></p>
+        <b>文件成功上传！</b>
+        <i>文件名：<b>{{ name }}</b></i>
 </div>
 </body>
+
 </html>

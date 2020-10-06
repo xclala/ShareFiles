@@ -1,66 +1,93 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <title>上传文件</title>
 </head>
+
 <body>
-<div contentEditable="true">
-<script>alert("欢迎！密码正确，登录成功！！！")</script>
-<h1>上传文件</h1>
-<style>
-    body {
-        background-color: black;
-    }
-    h1 {
-        color: orangered;
-        text-align: center
-    }
-    input
-    {
-        color:red;
-    }
-    input:hover{
-        color:green;
-    }
-    h1:hover {
-        color: orange;
-    }
-        .card{
-        position: relative;
-        width: 610px;
-        height: 20px;
-        perspective: 1000px;
-    }
-        .author,.authorback{
-        background-color: black;
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        backface-visibility: hidden;
-        transition: all 0.5s ease-in-out;
-    }
-            .author{
-        transform: rotateY(0deg);
-    }
-    .authorback{
-        transform: rotateY(-180deg);
-    }
-        .card:hover .author{
-        transform: rotateY(180deg);
-    }
-    .card:hover .authorback{
-        transform: rotateY(0deg);
-    }
-</style>
-<form action="/success" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="上传">
-</form>
-</div>
-<div class="card"><div class="author"> </div><div class="authorback">作者：邢栋</div></div>
+    <div contentEditable="true">
+        <script>
+            alert("欢迎！密码正确，登录成功！！！")
+        </script>
+        <h1>上传文件</h1>
+        <script>
+            function dark() {
+                document.body.style.backgroundColor = "black"
+            }
+
+            function light() {
+                document.body.style.backgroundColor = "#d0e4fe"
+            }
+        </script>
+        <button type="button" onclick="dark()">深色模式</button>
+        <button type="button" onclick="light()">浅色模式</button>
+        <p></p>
+        <style>
+            body {
+                background-color: black;
+            }
+
+            h1 {
+                color: orangered;
+                text-align: center;
+            }
+
+
+            input {
+                color: red;
+            }
+
+            input:hover {
+                color: green;
+            }
+
+            .card {
+                position: relative;
+                width: 610px;
+                height: 20px;
+                perspective: 1000px;
+            }
+
+            .author,
+            .authorback {
+                background-color: black;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                backface-visibility: hidden;
+                transition: all 0.5s ease-in-out;
+            }
+
+            .author {
+                transform: rotateY(0deg);
+            }
+
+            .authorback {
+                transform: rotateY(-180deg);
+            }
+
+            .card:hover .author {
+                transform: rotateY(180deg);
+            }
+
+            .card:hover .authorback {
+                transform: rotateY(0deg);
+            }
+        </style>
+        <form action="/success" method="post" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <input type="submit" value="上传">
+        </form>
+    </div>
+    <div class="card">
+        <div class="author"> </div>
+        <div class="authorback">作者：邢栋</div>
+    </div>
 </body>
+
 </html>

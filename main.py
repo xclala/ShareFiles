@@ -35,7 +35,7 @@ if _ == '1':
     def success():
         if request.method == 'POST':
             f = request.files['file']
-            f.save(secure_filename(f.filename))
+            f.save("上传的文件/"+secure_filename(f.filename))
             return render_template('success.html', name=f.filename)
     if p == '':
         if h == '':

@@ -36,12 +36,12 @@
             second; //alert(nowstr); //2、显示时间 html //获得标签对象
         var nowspan = document.getElementById("nowspan");
         nowspan.innerHTML = nowstr; //3、使时间动起来 
-        setTimeout("getnow()",1000);
+        setTimeout("getnow()", 1000);
     }
 </script>
 
 <body onload="getnow()">
-    <div contentEditable="true">
+    <div align="center">
         <script>
             alert("欢迎！密码正确，登录成功！！！")
         </script>
@@ -78,43 +78,8 @@
                 color: green;
             }
 
-            .card {
-                position: relative;
-                width: 610px;
-                height: 20px;
-                perspective: 1000px;
-            }
-
-            .author,
-            .authorback {
-                background-color: black;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                backface-visibility: hidden;
-                transition: all 0.5s ease-in-out;
-            }
-
-            .author {
-                transform: rotateY(0deg);
-            }
-
-            .authorback {
-                transform: rotateY(-180deg);
-            }
-
-            .card:hover .author {
-                transform: rotateY(180deg);
-            }
-
-            .card:hover .authorback {
-                transform: rotateY(0deg);
-            }
-            strong{
-                color:white;
+            strong {
+                color: white;
             }
         </style>
         <strong id="nowspan"></strong>
@@ -122,10 +87,6 @@
             <input type="file" name="file">
             <input type="submit" value="上传">
         </form>
-    </div>
-    <div class="card">
-        <div class="author"> </div>
-        <div class="authorback">作者：邢栋</div>
     </div>
 </body>
 

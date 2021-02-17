@@ -6,60 +6,25 @@
     <title>上传文件</title>
     <meta name="author" content="邢栋">
 </head>
-<script>
-    function getnow() {
-        //1、获得当前时间，格式化时间
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = now.getMonth() + 1;
-        if (month < 10) {
-            month = "0" + month;
-        }
-        var date = now.getDate();
-        if (date < 10) {
-            date = "0" + date;
-        }
-        var
-            hour = now.getHours();
-        if (hour < 10) {
-            hour = "0" + hour;
-        }
-        var minute = now.getMinutes();
-        if (minute < 10) {
-            minute = "0" + minute;
-        }
-        var second = now.getSeconds();
-        if (second < 10) {
-            second = "0" + second;
-        }
-        var nowstr = year +
-            "年" + month + "月" + date + "日  " + hour + ":" + minute + ":" +
-            second; //alert(nowstr); //2、显示时间 html //获得标签对象
-        var nowspan = document.getElementById("nowspan");
-        nowspan.innerHTML = nowstr; //3、使时间动起来 
-        setTimeout("getnow()", 1000);
-    }
-</script>
 
-<body onload="getnow()">
+
+<body>
     <div align="center">
         <script>
             alert("欢迎！密码正确，登录成功！！！")
         </script>
         <h1>上传文件</h1>
+        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
         <script>
-            function dark() {
-                document.body.style.backgroundColor = "black"
-            }
-
-            function light() {
-                document.body.style.backgroundColor = "#d0e4fe"
-                document.getElementById("nowspan").style.color = "black"
-            }
+            $(document).ready(function () {
+                var bg = ['#d0e4fe', 'black']
+                var c = 0
+                $("h1").click(function () {
+                    $("body").css("background", bg[c % 2])
+                    c++
+                })
+            })
         </script>
-        <button type="button" onclick="dark()">深色模式</button>
-        <button type="button" onclick="light()">浅色模式</button>
-        <p></p>
         <style>
             body {
                 background-color: black;
@@ -83,7 +48,6 @@
                 color: white;
             }
         </style>
-        <strong id="nowspan"></strong>
         <form action="/success" method="post" enctype="multipart/form-data">
             <input type="file" name="file">
             <input type="submit" value="上传">

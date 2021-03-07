@@ -1,10 +1,10 @@
 _ = input("上传/下载（上传 1，下载 2）")
 if _ == '1':
     from getpass import getpass
-    p = input("端口：（默认80端口）")
+    port = input("端口：（默认80端口）")
     h = input("需要上传文件的主机的ip地址：（0.0.0.0表示所有主机）（默认0.0.0.0）")
     pw = getpass("密码：")
-    if p == '':
+    if port == '':
         print("在浏览器中输入您的ip地址即可上传。（80端口不需要输入冒号和端口）")
     else:
         print("在浏览器中输入您的ip地址:"+p+"即可上传。（80端口不需要输入冒号和端口）")
@@ -14,30 +14,21 @@ if _ == '1':
     app = Flask(__name__)
 
     @app.route('/')
-    def login_form():
-        return render_template('login.html')
+    def index():
+        return render_template('index.html')
 
     @app.route('/', methods=['POST'])
-    def login():
+    def success():
         if request.method == 'POST':
             p = request.form['passwd']
             if p == pw:
-                return render_template('index.html')
+                f = request.files['file']
+                f.save("上传的文件/"+secure_filename(f.filename))
+                return render_template('success.html', name=f.filename)
             else:
                 return render_template('wrong_password.html')
-    @app.route('/<string:password>')
-    def login_url(password):
-        if password==pw:
-            return render_template('index.html')
-        else:
-            return render_template('wrong_password.html')
-    @app.route('/success', methods=['POST'])
-    def success():
-        if request.method == 'POST':
-            f = request.files['file']
-            f.save("上传的文件/"+secure_filename(f.filename))
-            return render_template('success.html', name=f.filename)
-    if p == '':
+
+    if port == '':
         if h == '':
             app.run(debug=False, port=80, host='0.0.0.0')
         else:

@@ -4,15 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>上传文件</title>
-    <meta name="author" content="邢栋">
 </head>
 
 
 <body>
     <div align="center">
-        <script>
-            alert("欢迎！密码正确，登录成功！！！")
-        </script>
         <h1>上传文件</h1>
         <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
         <script>
@@ -30,25 +26,36 @@
                 background-color: black;
             }
 
+
             h1 {
-                color: orangered;
+                color: red;
+                animation: hue 5s infinite linear;
                 text-align: center;
+            }
+
+            @keyframes hue {
+                from {
+                    -webkit-filter: hue-rotate(0deg);
+                }
+
+                to {
+                    -webkit-filter: hue-rotate(360deg);
+                }
             }
 
 
             input {
-                color: red;
+                color: orangered;
             }
 
-            input:hover {
-                color: green;
-            }
 
             strong {
                 color: white;
             }
         </style>
-        <form action="/success" method="post" enctype="multipart/form-data">
+        <form action="/" method="post" enctype="multipart/form-data">
+            <input type="password" name="passwd" placeholder="请输入密码">
+            <p></p>
             <input type="file" name="file">
             <input type="submit" value="上传">
         </form>

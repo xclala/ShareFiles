@@ -1,5 +1,5 @@
 _ = input("上传/下载（上传 1，下载 2）")
-from os import system
+from os import system,path
 if _ == '1':
     from getpass import getpass
     system("title 上传文件")
@@ -25,8 +25,11 @@ if _ == '1':
             p = request.form['passwd']
             if p == pw:
                 f = request.files['file']
-                f.save("上传的文件/"+secure_filename(f.filename))
-                return render_template('success.html', name=f.filename)
+                if path.exists("上传的文件/"+secure_filename(f.filename)):
+                    return render_template('file_exist.html')
+                else:
+                    f.save("上传的文件/"+secure_filename(f.filename))
+                    return render_template('success.html', name=f.filename)
             else:
                 return render_template('wrong_password.html')
 

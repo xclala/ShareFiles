@@ -26,12 +26,12 @@ if _ == '1':
             if p == pw:
                 f = request.files['file']
                 if path.exists("上传的文件/"+secure_filename(f.filename)):
-                    return render_template('file_exist.html')
+                    return render_template('index.html', alert_message="文件已存在！！！")
                 else:
                     f.save("上传的文件/"+secure_filename(f.filename))
-                    return render_template('success.html', name=f.filename)
+                    return render_template('index.html', alert_message="文件成功上传！")
             else:
-                return render_template('wrong_password.html')
+                return render_template('index.html', alert_message="密码错误！！！")
 
     if port == '':
         if h == '':

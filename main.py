@@ -1,4 +1,4 @@
-from os import system, path
+from os import system, path, urandom
 _ = input("上传/下载（上传 1，下载 2）")
 if _ == '1':
     from getpass import getpass
@@ -10,10 +10,13 @@ if _ == '1':
         print("在浏览器中输入您的ip地址即可上传。（80端口不需要输入冒号和端口）")
     else:
         print("在浏览器中输入您的ip地址:"+port+"即可上传。（80端口不需要输入冒号和端口）")
-    from flask import Flask, render_template, request
+    from flask import Flask, render_template, request, session
+    from flask_wtf.csrf import CSRFProtect
     from werkzeug.utils import secure_filename
 
     app = Flask(__name__)
+    app.config['SECRET_KEY'] = urandom(666)
+    CSRFProtect(app)
 
     @app.route('/')
     def index():
@@ -22,16 +25,25 @@ if _ == '1':
     @app.route('/', methods=['POST'])
     def success():
         if request.method == 'POST':
-            p = request.form['passwd']
-            if p == pw:
+            if session.get("password") is None:
+                p = request.form['passwd']
+                if p == pw:
+                    f = request.files['file']
+                    session['password'] = pw
+                    if path.exists("上传的文件/"+secure_filename(f.filename)):
+                        return render_template('upload.html', alert_message="文件已存在！！！")
+                    else:
+                        f.save("上传的文件/"+secure_filename(f.filename))
+                        return render_template('upload.html', alert_message="文件成功上传！")
+                else:
+                    return render_template('index.html', alert_message="密码错误！！！")
+            else:
                 f = request.files['file']
                 if path.exists("上传的文件/"+secure_filename(f.filename)):
-                    return render_template('index.html', alert_message="文件已存在！！！")
+                    return render_template('upload.html', alert_message="文件已存在！！！")
                 else:
                     f.save("上传的文件/"+secure_filename(f.filename))
-                    return render_template('index.html', alert_message="文件成功上传！")
-            else:
-                return render_template('index.html', alert_message="密码错误！！！")
+                    return render_template('upload.html', alert_message="文件成功上传！")
 
     if port == '':
         if h == '':
@@ -75,4 +87,3 @@ elif _ == '2':
                 system(f"server --bind {hh} {pp}")
             else:
                 system(f"server --bind {hh} --directory {dd} {pp}")
-

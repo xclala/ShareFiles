@@ -1,3 +1,4 @@
+{% block header %}
 <!DOCTYPE html>
 <html lang="zh">
 
@@ -5,7 +6,6 @@
     <meta charset="UTF-8">
     <title>上传文件</title>
 </head>
-
 
 <body>
     <a href="https://github.com/xclala/xclala.github.io">
@@ -18,7 +18,12 @@
     <div align="center">
         <h1>上传文件</h1>
         <form action="/" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% endblock %}
+            {% block enter_password %}
             <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+            {% endblock %}
+            {% block footer %}
             <p></p>
             <input type="file" name="file">
             <input type="submit" value="上传">
@@ -60,7 +65,7 @@
             }
 
 
-            strong {
+            p {
                 color: white;
             }
         </style>
@@ -84,3 +89,4 @@
 </body>
 
 </html>
+{% endblock %}

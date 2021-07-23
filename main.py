@@ -13,6 +13,7 @@ if _ == '1':
     from flask import Flask, render_template, request, session
     from flask_wtf.csrf import CSRFProtect
     from werkzeug.utils import secure_filename
+    from uuid import uuid4
 
     app = Flask(__name__)
     app.config['SECRET_KEY'] = urandom(666)
@@ -28,21 +29,23 @@ if _ == '1':
             if session.get("password") is None:
                 p = request.form['passwd']
                 if p == pw:
-                    f = request.files['file']
-                    session['password'] = pw
-                    if path.exists("上传的文件/"+secure_filename(f.filename)):
-                        return render_template('upload.html', alert_message="文件已存在！！！")
-                    else:
-                        f.save("上传的文件/"+secure_filename(f.filename))
-                        return render_template('upload.html', alert_message="文件成功上传！")
+                    for f in request.files.getlist('file'):
+                        session['password'] = pw
+                        if path.exists("上传的文件/"+secure_filename(f.filename)):
+                            f.save("上传的文件/"+uuid4().hex +
+                                   path.splitext(f.filename)[1])
+                        else:
+                            f.save("上传的文件/"+secure_filename(f.filename))
+                    return render_template('upload.html', alert_message="文件成功上传！")
                 else:
                     return render_template('index.html', alert_message="密码错误！！！")
             else:
-                f = request.files['file']
-                if path.exists("上传的文件/"+secure_filename(f.filename)):
-                    return render_template('upload.html', alert_message="文件已存在！！！")
-                else:
-                    f.save("上传的文件/"+secure_filename(f.filename))
+                for f in request.files.getlist('file'):
+                    if path.exists("上传的文件/"+secure_filename(f.filename)):
+                        f.save("上传的文件/"+uuid4().hex +
+                               path.splitext(f.filename)[1])
+                    else:
+                        f.save("上传的文件/"+secure_filename(f.filename))
                     return render_template('upload.html', alert_message="文件成功上传！")
 
     if port == '':

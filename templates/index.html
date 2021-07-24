@@ -20,8 +20,10 @@
         <form action="/" method="post" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% endblock %}
-            {% block enter_password %}
+            {% block password %}
             <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+            <label>记住密码</label>
+            <input type="checkbox" name="remember_password">
             {% endblock %}
             {% block footer %}
             <p></p>
@@ -33,12 +35,20 @@
                 body {
                     background-color: black;
                 }
+
+                label {
+                    color: white;
+                }
             }
 
 
             @media(prefers-color-scheme:light) {
                 body {
                     background-color: #E9FDFF;
+                }
+
+                label {
+                    color: black;
                 }
             }
 
@@ -63,19 +73,17 @@
             input {
                 color: orangered;
             }
-
-
-            p {
-                color: white;
-            }
+            label{font-size: smaller;}
         </style>
         <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
         <script>
             $(document).ready(function () {
                 const BACKGROUNDCOLOR = ['#E9FDFF', 'black']
+                const LABELCOLOR = ['black', 'white']
                 let c = 0
                 $("h1").click(function () {
                     $("body").css("background", BACKGROUNDCOLOR[c % 2])
+                    $("label").css("color", LABELCOLOR[c % 2])
                     c++
                 })
             })

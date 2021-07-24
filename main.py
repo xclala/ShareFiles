@@ -26,27 +26,40 @@ if _ == '1':
     @app.route('/', methods=['POST'])
     def success():
         if request.method == 'POST':
-            if session.get("password") is None:
+            if request.form.getlist('remember_password')==['on']:
+                if session.get("password") is None:
+                    p = request.form['passwd']
+                    if p == pw:
+                        for f in request.files.getlist('file'):
+                            session['password'] = pw
+                            if path.exists("上传的文件/"+secure_filename(f.filename)):
+                                f.save("上传的文件/"+uuid4().hex +
+                                    path.splitext(f.filename)[1])
+                            else:
+                                f.save("上传的文件/"+secure_filename(f.filename))
+                            return render_template('upload.html', alert_message="文件成功上传！")
+                    else:
+                        return render_template('index.html', alert_message="密码错误！！！")
+                else:
+                    for f in request.files.getlist('file'):
+                        if path.exists("上传的文件/"+secure_filename(f.filename)):
+                            f.save("上传的文件/"+uuid4().hex +
+                                path.splitext(f.filename)[1])
+                        else:
+                            f.save("上传的文件/"+secure_filename(f.filename))
+                        return render_template('upload.html', alert_message="文件成功上传！")
+            else:
                 p = request.form['passwd']
                 if p == pw:
                     for f in request.files.getlist('file'):
-                        session['password'] = pw
                         if path.exists("上传的文件/"+secure_filename(f.filename)):
                             f.save("上传的文件/"+uuid4().hex +
-                                   path.splitext(f.filename)[1])
+                                path.splitext(fs.filename)[1])
                         else:
                             f.save("上传的文件/"+secure_filename(f.filename))
-                    return render_template('upload.html', alert_message="文件成功上传！")
+                        return render_template('index.html', alert_message="文件成功上传！")
                 else:
                     return render_template('index.html', alert_message="密码错误！！！")
-            else:
-                for f in request.files.getlist('file'):
-                    if path.exists("上传的文件/"+secure_filename(f.filename)):
-                        f.save("上传的文件/"+uuid4().hex +
-                               path.splitext(f.filename)[1])
-                    else:
-                        f.save("上传的文件/"+secure_filename(f.filename))
-                    return render_template('upload.html', alert_message="文件成功上传！")
 
     if port == '':
         if h == '':

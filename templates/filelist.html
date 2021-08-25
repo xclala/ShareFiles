@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>下载文件</title>
+    <meta name="author" content="邢栋">
+</head>
+
+<body>
+    <a href="https://github.com/xclala/UploadDownloadFiles">
+        <img src="https://xclala.gitee.io/github.svg">
+    </a>
+    <h1>下载文件</h1>
+    {% for fl in filelist %}
+    <p><a href="../{{ fl }}">{{ fl }}<br></a></p>
+    {% endfor %}
+    <style>
+        @media(prefers-color-scheme:dark) {
+            body {
+                background-color: #111114;
+            }
+
+            h1 {
+                color: white;
+            }
+
+            a {
+                color: orangered;
+            }
+        }
+
+        @media(prefers-color-scheme:light) {
+            body {
+                background-color: whitesmoke;
+            }
+
+            h1 {
+                color: black;
+            }
+
+            a {
+                color: blue;
+            }
+        }
+
+        a {
+            text-decoration-line: none;
+        }
+
+        a:hover {
+            font-weight: bolder;
+        }
+
+        h1,
+        p {
+            text-align: center;
+        }
+    </style>
+    <script>
+        const BACKGROUNDCOLOR = ['#111114', 'whitesmoke']
+        const TEXTCOLOR = ['white', 'black']
+        const LINKCOLOR = ['orange', 'blue']
+        let c = 0
+        document.getElementsByTagName("h1")[0].onclick = function () {
+            document.body.style.backgroundColor = BACKGROUNDCOLOR[c % 2]
+            document.getElementsByTagName("h1")[0].style.color = TEXTCOLOR[c % 2]
+            let xx = document.getElementsByTagName("a")
+            for (let i = 0; i < xx.length; i++) {
+                xx[i].style.color = LINKCOLOR[c % 2]
+            }
+            c++
+        }
+    </script>
+</body>
+
+</html>

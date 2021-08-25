@@ -9,7 +9,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
 port = input("端口：（默认80端口）")
-h = input("需要上传文件的主机的ip地址：（0.0.0.0表示所有主机）（默认0.0.0.0）")
 _ = input("让别人 上传/下载（上传输入 1，下载输入 2）")
 if _ == '1':
     from getpass import getpass
@@ -99,12 +98,7 @@ elif _ == '2':
 
 
 if port == '':
-    if h == '':
-        app.run(debug=False, port=80, host='0.0.0.0')
-    else:
-        app.run(debug=False, port=80, host=h)
+    app.run(debug=False, port=80, host='0.0.0.0')
+
 else:
-    if h == '':
-        app.run(debug=False, port=port, host='0.0.0.0')
-    else:
-        app.run(debug=False, port=port, host=h)
+    app.run(debug=False, port=port, host='0.0.0.0')

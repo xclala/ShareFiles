@@ -1,4 +1,3 @@
-#无法上传多个文件
 from os import abort, system, path, urandom, getcwd, mkdir, listdir, walk
 from flask import Flask, render_template, request, session, send_file, abort
 from flask_wtf.csrf import CSRFProtect
@@ -9,7 +8,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
 port = input("端口：（默认80端口）")
-_ = input("让别人 上传/下载（上传输入 1，下载输入 2）")
+_ = input("让别人上传输入 1，让别人下载输入 2")
 if _ == '1':
     from getpass import getpass
     pw = getpass("密码：")

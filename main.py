@@ -3,23 +3,23 @@ from flask import Flask, render_template, request, session, send_file, abort
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.utils import secure_filename
 from uuid import uuid4
+from waitress import serve
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
 port = input("端口：（默认80端口）")
-_ = input("让别人上传输入 1，让别人下载输入 2")
+_ = input("让别人上传输入 1，让别人下载输入 2：")
 if _ == '1':
     from getpass import getpass
-    pw = getpass("密码：")
     system("title 上传文件")
+    pw = getpass("密码：")
     if port == '':
         print("在浏览器中输入您的ip地址即可上传。（80端口不需要输入冒号和端口）")
     else:
         print("在浏览器中输入您的ip地址:" + port + "即可上传。（80端口不需要输入冒号和端口）")
     if not path.exists(path.join(getcwd(), "别人上传的文件")):
         mkdir("别人上传的文件")
-
     @app.route('/', methods=['GET', 'POST'])
     def index():
         if request.method == 'POST':
@@ -97,7 +97,7 @@ elif _ == '2':
 
 
 if port == '':
-    app.run(debug=False, port=80, host='0.0.0.0')
+    serve(app, host='0.0.0.0', port=80)
 
 else:
-    app.run(debug=False, port=port, host='0.0.0.0')
+    serve(app, host='0.0.0.0', port=port)

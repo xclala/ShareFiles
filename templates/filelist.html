@@ -11,9 +11,10 @@
     <a href="https://github.com/xclala/UploadDownloadFiles">
         <img src="https://xclala.gitee.io/github.svg">
     </a>
+    <a href="..">上传文件</a>
     <h1>下载文件</h1>
     {% for fl in filelist %}
-    <p><a href="../{{ fl }}">{{ fl }}<br></a></p>
+    <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
     {% endfor %}
     <style>
         @media(prefers-color-scheme:dark) {

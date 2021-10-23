@@ -22,9 +22,7 @@ def download_file(filename):
         filepath = path.join("让别人下载的文件/", filename)
         if path.exists(filepath):
             if path.isfile(filepath):
-                with open(filepath, 'rb') as file_object:
-                    return send_file(BytesIO(file_object.read()),
-                                     mimetype=guess_type(filepath)[0])
+                return send_file(filepath)
             else:
                 abort(404)
         else:

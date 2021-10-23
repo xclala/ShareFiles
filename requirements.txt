@@ -1,8 +1,8 @@
 aiofiles==0.7.0
 altgraph==0.17.2
 blinker==1.4
-cffi==1.14.6
-click==8.0.1
+cffi==1.15.0
+click==8.0.3
 colorama==0.4.4
 cryptography==35.0.0
 Flask==2.0.2

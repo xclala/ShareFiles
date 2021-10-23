@@ -17,8 +17,6 @@ def file_list():
 @app.route('/<filename>', methods=['GET'])
 def download_file(filename):
     if request.method == 'GET':
-        from io import BytesIO
-        from mimetypes import guess_type
         filepath = path.join("让别人下载的文件/", filename)
         if path.exists(filepath):
             if path.isfile(filepath):

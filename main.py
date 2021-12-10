@@ -2,13 +2,21 @@ from os import system, path, urandom, getcwd, mkdir
 from flask import Flask, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
+from argparse import ArgumentParser
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
+parser = ArgumentParser() #一定要在导入upload和download之前
+parser.add_argument('--port', type=int) #一定要在导入upload和download之前
+parser.add_argument('--thread', type=int) #一定要在导入upload和download之前
+port = parser.parse_args().port #一定要在导入upload和download之前
+threads = parser.parse_args().thread #一定要在导入upload和download之前
+if port is None:
+    port = input("端口：（默认80端口）")  #一定要在导入upload和download之前
+if threads is None:
+    threads = input("线程数：（默认4个）")  #一定要在导入upload和download之前
 _ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  #一定要在导入upload和download之前
-port = input("端口：（默认80端口）")  #一定要在导入upload和download之前
-threads = input("线程数：（默认4个）")  #一定要在导入upload和download之前
 if _ == '1':
     if not path.exists(path.join(getcwd(), "别人上传的文件")):
         mkdir("别人上传的文件")
@@ -51,9 +59,9 @@ elif _ == '0':
 if __name__ == "__main__":
     if port == '':
         if threads == '':
-            serve(app, host='0.0.0.0', port=80, threads=threads)
-        else:
             serve(app, host='0.0.0.0', port=80)
+        else:
+            serve(app, host='0.0.0.0', port=80, threads=threads)
     else:
         if threads == '':
             serve(app, host='0.0.0.0', port=port)

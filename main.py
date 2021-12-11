@@ -7,11 +7,11 @@ from argparse import ArgumentParser
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
-parser = ArgumentParser() #一定要在导入upload和download之前
-parser.add_argument('--port', type=int) #一定要在导入upload和download之前
-parser.add_argument('--thread', type=int) #一定要在导入upload和download之前
-port = parser.parse_args().port #一定要在导入upload和download之前
-threads = parser.parse_args().thread #一定要在导入upload和download之前
+parser = ArgumentParser()  #一定要在导入upload和download之前
+parser.add_argument('--port', type=int)  #一定要在导入upload和download之前
+parser.add_argument('--thread', type=int)  #一定要在导入upload和download之前
+port = parser.parse_args().port  #一定要在导入upload和download之前
+threads = parser.parse_args().thread  #一定要在导入upload和download之前
 if port is None:
     port = input("端口：（默认80端口）")  #一定要在导入upload和download之前
 if threads is None:

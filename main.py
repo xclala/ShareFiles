@@ -8,15 +8,27 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
 parser = ArgumentParser()  #一定要在导入upload和download之前
-parser.add_argument('--port', type=int)  #一定要在导入upload和download之前
-parser.add_argument('--thread', type=int)  #一定要在导入upload和download之前
-port = parser.parse_args().port  #一定要在导入upload和download之前
+parser.add_argument('-p', '--port', type=int)  #一定要在导入upload和download之前
+parser.add_argument('-t', '--thread', type=int)  #一定要在导入upload和download之前
+parser.add_argument('--upload', action="store_true")  #一定要在导入upload和download之前
+parser.add_argument('--download',
+                    action="store_true")  #一定要在导入upload和download之前
+port = str(parser.parse_args().port)  #一定要在导入upload和download之前
 threads = parser.parse_args().thread  #一定要在导入upload和download之前
 if port is None:
-    port = input("端口：（默认80端口）")  #一定要在导入upload和download之前
+    port = int(input("端口：（默认80端口）"))  #一定要在导入upload和download之前
 if threads is None:
     threads = input("线程数：（默认4个）")  #一定要在导入upload和download之前
-_ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  #一定要在导入upload和download之前
+if parser.parse_args().upload:
+    if parser.parse_args().download:
+        _ = '0'  #一定要在导入upload和download之前
+    else:
+        _ = '1'  #一定要在导入upload和download之前
+if parser.parse_args().download:
+    _ = '2'  #一定要在导入upload和download之前
+if not parser.parse_args().upload:
+    if not parser.parse_args().download:
+        _ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  #一定要在导入upload和download之前
 if _ == '1':
     if not path.exists(path.join(getcwd(), "别人上传的文件")):
         mkdir("别人上传的文件")

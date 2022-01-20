@@ -2,6 +2,5 @@
 !main.py
 !templates/
 !requirements.txt
-!.gitignore
 !upload.py
 !download.py

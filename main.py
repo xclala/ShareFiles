@@ -7,28 +7,31 @@ from argparse import ArgumentParser
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
-parser = ArgumentParser()  #一定要在导入upload和download之前
-parser.add_argument('-p', '--port', type=int)  #一定要在导入upload和download之前
-parser.add_argument('-t', '--thread', type=int)  #一定要在导入upload和download之前
-parser.add_argument('--upload', action="store_true")  #一定要在导入upload和download之前
+parser = ArgumentParser()  
+parser.add_argument('-p', '--port', type=int)  
+parser.add_argument('-t', '--thread', type=int)  
+parser.add_argument('--upload', action="store_true") 
 parser.add_argument('--download',
-                    action="store_true")  #一定要在导入upload和download之前
-port = str(parser.parse_args().port)  #一定要在导入upload和download之前
-threads = parser.parse_args().thread  #一定要在导入upload和download之前
+                    action="store_true")  
+port = parser.parse_args().port  
+threads = parser.parse_args().thread 
 if port is None:
-    port = int(input("端口：（默认80端口）"))  #一定要在导入upload和download之前
+    from tkinter.simpledialog import askinteger
+    port = askinteger(title="请输入端口",prompt="请输入端口",initialvalue=80)
 if threads is None:
-    threads = input("线程数：（默认4个）")  #一定要在导入upload和download之前
+    from tkinter.simpledialog import askinteger
+    threads = askinteger(title="请输入线程数",prompt="请输入线程数",initialvalue=4)
 if parser.parse_args().upload:
     if parser.parse_args().download:
-        _ = '0'  #一定要在导入upload和download之前
+        _ = '0'  
     else:
-        _ = '1'  #一定要在导入upload和download之前
+        _ = '1'  
 if parser.parse_args().download:
-    _ = '2'  #一定要在导入upload和download之前
+    _ = '2'  
 if not parser.parse_args().upload:
     if not parser.parse_args().download:
-        _ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  #一定要在导入upload和download之前
+        _ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  
+#一定要在导入upload和download之前获取端口、线程数、上传或下载或上传又下载
 if _ == '1':
     if not path.exists(path.join(getcwd(), "别人上传的文件")):
         mkdir("别人上传的文件")
@@ -43,7 +46,7 @@ if _ == '1':
     if port == '':
         print("在浏览器中输入您的ip地址即可上传。")
     else:
-        print("在浏览器中输入您的ip地址:" + port + "即可上传。")
+        print("在浏览器中输入您的ip地址:" + str(port) + "即可上传。")
 elif _ == '2':
     if not path.exists(path.join(getcwd(), "让别人下载的文件")):
         mkdir("让别人下载的文件")
@@ -53,7 +56,7 @@ elif _ == '2':
     if port == '':
         print("在浏览器中输入您的ip地址即可下载。")
     else:
-        print("在浏览器中输入您的ip地址:" + port + "即可下载。")
+        print("在浏览器中输入您的ip地址:" + str(port) + "即可下载。")
 elif _ == '0':
     from upload import app as upload
     from download import app as download
@@ -73,9 +76,9 @@ if __name__ == "__main__":
         if threads == '':
             serve(app, host='0.0.0.0', port=80)
         else:
-            serve(app, host='0.0.0.0', port=80, threads=threads)
+            serve(app, host='0.0.0.0', port=80, threads=str(threads))
     else:
         if threads == '':
-            serve(app, host='0.0.0.0', port=port)
+            serve(app, host='0.0.0.0', port=str(port))
         else:
-            serve(app, host='0.0.0.0', port=port, threads=threads)
+            serve(app, host='0.0.0.0', port=str(port), threads=str(threads))

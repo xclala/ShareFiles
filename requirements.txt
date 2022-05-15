@@ -19,6 +19,8 @@ MarkupSafe==2.1.1
 pefile==2021.9.3
 priority==2.0.0
 pycparser==2.21
+pyinstaller==5.0.1
+pyinstaller-hooks-contrib==2022.4
 pywin32==304
 pywin32-ctypes==0.2.0
 toml==0.10.2

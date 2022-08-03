@@ -30,7 +30,26 @@ if parser.parse_args().download:
     _ = '2'  
 if not parser.parse_args().upload:
     if not parser.parse_args().download:
-        _ = input("让别人上传输入 1，让别人下载输入 2，既上传又下载输入 0：")  
+        from tkinter import Tk, Button, Checkbutton, IntVar, mainloop
+        root = Tk()
+        root.title("请选择")
+        root.geometry("250x100")
+        root.resizable(0, 0)
+        root.protocol("WM_DELETE_WINDOW", lambda:...)
+        var1 = IntVar()
+        var2 = IntVar()
+        Checkbutton(root, text="上传文件", variable=var1).pack()
+        Checkbutton(root, text="下载文件", variable=var2).pack()
+        Button(text="确定", command=root.destroy()).pack()
+        mainloop()
+        if var1.get() == 1 and var2.get() == 1:
+            _ = 0 #既上传又下载
+        elif var1.get() == 1:
+            _ = 1 #上传
+        elif var2.get() == 1:
+            _ = 2 #下载
+        else:
+            _ = 0
 #一定要在导入upload和download之前获取端口、线程数、上传或下载或上传又下载
 if _ == '1':
     if not path.exists(path.join(getcwd(), "别人上传的文件")):

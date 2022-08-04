@@ -40,16 +40,16 @@ if not parser.parse_args().upload:
         var2 = IntVar()
         Checkbutton(root, text="上传文件", variable=var1).pack()
         Checkbutton(root, text="下载文件", variable=var2).pack()
-        Button(text="确定", command=root.destroy()).pack()
+        Button(root, text="确定", command=root.destroy).pack()
         mainloop()
         if var1.get() == 1 and var2.get() == 1:
-            _ = 0 #既上传又下载
+            _ = '0' #既上传又下载
         elif var1.get() == 1:
-            _ = 1 #上传
+            _ = '1' #上传
         elif var2.get() == 1:
-            _ = 2 #下载
+            _ = '2' #下载
         else:
-            _ = 0
+            _ = '0'
 #一定要在导入upload和download之前获取端口、线程数、上传或下载或上传又下载
 if _ == '1':
     if not path.exists(path.join(getcwd(), "别人上传的文件")):

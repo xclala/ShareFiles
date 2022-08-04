@@ -3,6 +3,7 @@ from flask import Flask, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from argparse import ArgumentParser
+from tkinter.messagebox import showinfo
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
@@ -63,9 +64,9 @@ if _ == '1':
 
     app.register_blueprint(upload)
     if port == '':
-        print("在浏览器中输入您的ip地址即可上传。")
+        showinfo("", "在浏览器中输入您的ip地址即可上传。")
     else:
-        print("在浏览器中输入您的ip地址:" + str(port) + "即可上传。")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可上传。")
 elif _ == '2':
     if not path.exists(path.join(getcwd(), "让别人下载的文件")):
         mkdir("让别人下载的文件")
@@ -73,9 +74,9 @@ elif _ == '2':
     system("title 下载文件")
     app.register_blueprint(download)
     if port == '':
-        print("在浏览器中输入您的ip地址即可下载。")
+        showinfo("", "在浏览器中输入您的ip地址即可下载。")
     else:
-        print("在浏览器中输入您的ip地址:" + str(port) + "即可下载。")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可下载。")
 elif _ == '0':
     from upload import app as upload
     from download import app as download
@@ -87,9 +88,9 @@ elif _ == '0':
     app.register_blueprint(upload)
     app.register_blueprint(download, url_prefix='/filelist')
     if port == '':
-        print("在浏览器中输入您的ip地址即可上传和下载。")
+        showinfo("", "在浏览器中输入您的ip地址即可上传和下载。")
     else:
-        print("在浏览器中输入您的ip地址:" + port + "即可下载。")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可上传和下载。")
 if __name__ == "__main__":
     if port == '':
         if threads == '':

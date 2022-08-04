@@ -3,10 +3,20 @@ try:
     from os import path
     from werkzeug.utils import secure_filename
     from uuid import uuid4
-    from getpass import getpass
+    from tkinter import Tk, mainloop, Entry, Button, Label, StringVar
 
     app = Blueprint('upload', __name__)
-    pw = getpass("密码：")
+    root = Tk()
+    root.title("请输入密码")
+    root.geometry("250x100")
+    root.resizable(0, 0)
+    pw_temp = StringVar() 
+    root.protocol("WM_DELETE_WINDOW", lambda:...)
+    Label(root, text="密码：").pack()
+    Entry(root, textvariable=pw_temp, show="*").pack()
+    Button(text="确定", command=root.destroy).pack()
+    mainloop()
+    pw = pw_temp.get()
 
 
     @app.route('/', methods=['GET', 'POST'])

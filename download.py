@@ -8,7 +8,7 @@ try:
     @app.route('/', methods=['GET'])
     def file_list():
         if request.method == 'GET':
-            for ___, _________, fl in walk("让别人下载的文件"):
+            for ___, _________, fl in walk("共享的文件"):
                 if fl != []:
                     return render_template("filelist.html", filelist=fl)
                 else:
@@ -18,7 +18,7 @@ try:
     @app.route('/<filename>', methods=['GET'])
     def download_file(filename):
         if request.method == 'GET':
-            filepath = path.join("让别人下载的文件/", filename)
+            filepath = path.join("共享的文件/", filename)
             if path.exists(filepath):
                 if path.isfile(filepath):
                     return send_file(filepath)

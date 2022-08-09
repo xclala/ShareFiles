@@ -10,7 +10,7 @@ try:
     root.title("请输入密码")
     root.geometry("250x100")
     root.resizable(0, 0)
-    pw_temp = StringVar() 
+    pw_temp = StringVar()
     root.protocol("WM_DELETE_WINDOW", lambda:...)
     Label(root, text="密码：").pack()
     Entry(root, textvariable=pw_temp, show="*").pack()
@@ -28,12 +28,12 @@ try:
                     for f in request.files.getlist('file'):
                         session['password'] = pw
                         if f.filename != "":
-                            if path.exists("别人上传的文件/" +
-                                        secure_filename(f.filename)):
-                                f.save("别人上传的文件/" + uuid4().hex +
-                                    path.splitext(f.filename)[1])
+                            if path.exists("共享的文件/" +
+                                           secure_filename(f.filename)):
+                                f.save("共享的文件/" + uuid4().hex +
+                                       path.splitext(f.filename)[1])
                             else:
-                                f.save("别人上传的文件/" + secure_filename(f.filename))
+                                f.save("共享的文件/" + secure_filename(f.filename))
                         else:
                             return render_template("index.html",
                                                 alert_message="请先选择文件！")
@@ -44,11 +44,11 @@ try:
             else:
                 for f in request.files.getlist('file'):
                     if f.filename != "":
-                        if path.exists("别人上传的文件/" + secure_filename(f.filename)):
-                            f.save("别人上传的文件/" + uuid4().hex +
-                                path.splitext(f.filename)[1])
+                        if path.exists("共享的文件/" + secure_filename(f.filename)):
+                            f.save("共享的文件/" + uuid4().hex +
+                                   path.splitext(f.filename)[1])
                         else:
-                            f.save("别人上传的文件/" + secure_filename(f.filename))
+                            f.save("共享的文件/" + secure_filename(f.filename))
                     else:
                         return render_template("index.html",
                                             alert_message="请先选择文件！")

@@ -1,5 +1,5 @@
-# UploadDownloadFiles
-上传下载文件的源代码
+# ShareFiles
+共享文件的源代码
 usage: main.py [-h] [-p PORT] [-t THREAD] [--upload] [--download]
 
 options:

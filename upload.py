@@ -28,15 +28,17 @@ try:
             if p != pw:
                 return render_template('index.html', alert_message="密码错误！！！")
             session['password'] = pw
-        for f in request.files.getlist('file'):
-            if f.filename == "":
-                return render_template("index.html", alert_message="请先选择文件！")
-            if path.exists("共享的文件/" + secure_filename(f.filename)):
-                f.save("共享的文件/" + uuid4().hex +
-                        path.splitext(f.filename)[1])
-            else:
-                f.save("共享的文件/" + secure_filename(f.filename))            
-        return render_template('upload.html', alert_message="文件成功上传！")
+        if session.get("password") == pw:
+            for f in request.files.getlist('file'):
+                if f.filename == "":
+                    return render_template("index.html", alert_message="请先选择文件！")
+                if path.exists("共享的文件/" + secure_filename(f.filename)):
+                    f.save("共享的文件/" + uuid4().hex +
+                            path.splitext(f.filename)[1])
+                else:
+                    f.save("共享的文件/" + secure_filename(f.filename))            
+            return render_template('upload.html', alert_message="文件成功上传！")
+        return render_template('index.html', alert_message="密码错误！！！")
 
 
     @app.route('/del_session', methods=['GET'])

@@ -21,41 +21,22 @@ try:
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
-        if request.method == 'POST':
-            if session.get("password") is None:
-                p = request.form['passwd']
-                if p == pw:
-                    for f in request.files.getlist('file'):
-                        session['password'] = pw
-                        if f.filename != "":
-                            if path.exists("共享的文件/" +
-                                           secure_filename(f.filename)):
-                                f.save("共享的文件/" + uuid4().hex +
-                                       path.splitext(f.filename)[1])
-                            else:
-                                f.save("共享的文件/" + secure_filename(f.filename))
-                        else:
-                            return render_template("index.html",
-                                                alert_message="请先选择文件！")
-                    return render_template('upload.html', alert_message="文件成功上传！")
-                    #这个return与for循环缩进相同，这样才能保存完多个文件后再return，进而实现多文件上传
-                else:
-                    return render_template('index.html', alert_message="密码错误！！！")
-            else:
-                for f in request.files.getlist('file'):
-                    if f.filename != "":
-                        if path.exists("共享的文件/" + secure_filename(f.filename)):
-                            f.save("共享的文件/" + uuid4().hex +
-                                   path.splitext(f.filename)[1])
-                        else:
-                            f.save("共享的文件/" + secure_filename(f.filename))
-                    else:
-                        return render_template("index.html",
-                                            alert_message="请先选择文件！")
-                return render_template('upload.html', alert_message="文件成功上传！")
-                #这个return与for循环缩进相同，这样才能保存完多个文件后再return，进而实现多文件上传
-        else:
+        if request.method != 'POST':
             return render_template('index.html')
+        if session.get("password") is None:
+            p = request.form['passwd']
+            if p != pw:
+                return render_template('index.html', alert_message="密码错误！！！")
+            session['password'] = pw
+        for f in request.files.getlist('file'):
+            if f.filename == "":
+                return render_template("index.html", alert_message="请先选择文件！")
+            if path.exists("共享的文件/" + secure_filename(f.filename)):
+                f.save("共享的文件/" + uuid4().hex +
+                        path.splitext(f.filename)[1])
+            else:
+                f.save("共享的文件/" + secure_filename(f.filename))            
+        return render_template('upload.html', alert_message="文件成功上传！")
 
 
     @app.route('/del_session', methods=['GET'])

@@ -22,9 +22,6 @@ try:
             if path.exists(filepath):
                 if path.isfile(filepath):
                     return send_file(filepath)
-                else:
-                    abort(404)
-            else:
-                abort(404)
+            abort(404)
 except Exception as e:
     print(e)

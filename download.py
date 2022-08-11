@@ -9,10 +9,9 @@ try:
     def file_list():
         if request.method == 'GET':
             for ___, _________, fl in walk("共享的文件"):
-                if fl != []:
-                    return render_template("filelist.html", filelist=fl)
-                else:
-                    return render_template("filelist.html", filelist="")
+                if fl == []:
+                    fl = ""
+                return render_template("filelist.html", filelist=fl)
 
 
     @app.route('/<filename>', methods=['GET'])

@@ -37,8 +37,14 @@
                 background-color: #111114;
             }
 
-            label {
+
+
+            h1 {
                 color: white;
+            }
+
+            a {
+                color: orangered;
             }
         }
 
@@ -48,26 +54,20 @@
                 background-color: #E9FDFF;
             }
 
-            label {
+
+
+            h1 {
                 color: black;
+            }
+
+            a {
+                color: blue;
             }
         }
 
 
         h1 {
-            color: red;
-            animation: hue 5s infinite linear;
             text-align: center;
-        }
-
-        @keyframes hue {
-            from {
-                -webkit-filter: hue-rotate(0deg);
-            }
-
-            to {
-                -webkit-filter: hue-rotate(360deg);
-            }
         }
 
 
@@ -76,12 +76,17 @@
         }
     </style>
     <script>
-        const BACKGROUNDCOLOR = ['#E9FDFF', '#111114']
-        const LABELCOLOR = ['black', 'white']
+        const BACKGROUNDCOLOR = ['#111114', '#E9FDFF']
+        const TEXTCOLOR = ['white', 'black']
+        const LINKCOLOR = ['orangered', 'blue']
         let c = 0
         document.getElementsByTagName("h1")[0].onclick = function () {
             document.body.style.backgroundColor = BACKGROUNDCOLOR[c % 2]
-            document.getElementsByTagName("label")[0].style.color = LABELCOLOR[c % 2]
+            document.getElementsByTagName("h1")[0].style.color = TEXTCOLOR[c % 2]
+            const LINK = document.getElementsByTagName("a")
+            for (i = 0; i < LINK.length; i++) {
+                LINK[i].style.color = LINKCOLOR[c % 2]
+            }
             c++
         }
     </script>

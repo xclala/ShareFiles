@@ -4,7 +4,6 @@ try:
 
     app = Blueprint('download', __name__)
 
-
     @app.route('/', methods=['GET'])
     def file_list():
         if request.method == 'GET':

@@ -1,16 +1,17 @@
 try:
     from flask import Blueprint, render_template, abort, send_file, request
-    from os import path, walk
+    from os import path, scandir
 
     app = Blueprint('download', __name__)
 
     @app.route('/', methods=['GET'])
     def file_list():
+        filelist = []
         if request.method == 'GET':
-            for ___, _________, fl in walk("共享的文件"):
-                if fl == []:
-                    fl = ""
-                return render_template("filelist.html", filelist=fl)
+            for fl in scandir("共享的文件"):
+                if fl.is_file():
+                    filelist.append(fl.name)
+            return render_template("filelist.html", filelist=filelist)
 
 
     @app.route('/<filename>', methods=['GET'])

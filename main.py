@@ -42,7 +42,7 @@ try:
             root.protocol("WM_DELETE_WINDOW", lambda:...)
             var1 = IntVar()
             var2 = IntVar()
-            Checkbutton(root, text="允许他人上传文件到“共享的文件”文件夹", variable=var1).pack()
+            Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
             Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
             Button(root, text="确定", command=root.destroy).pack()
             mainloop()
@@ -68,25 +68,25 @@ try:
 
         app.register_blueprint(upload)
         if port == '':
-            showinfo("", "在浏览器中输入您的ip地址即可上传。")
+            showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
         else:
-            showinfo("", f"在浏览器中输入您的ip地址:{port}即可上传。")
+            showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
     elif _ == '2':
         from download import app as download
         app.register_blueprint(download)
         if port == '':
-            showinfo("", "在浏览器中输入您的ip地址即可下载。")
+            showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
         else:
-            showinfo("", f"在浏览器中输入您的ip地址:{port}即可下载。")
+            showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
     elif _ == '0':
         from upload import app as upload
         from download import app as download
         app.register_blueprint(upload)
         app.register_blueprint(download, url_prefix='/filelist')
         if port == '':
-            showinfo("", "在浏览器中输入您的ip地址即可上传和下载。")
+            showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:
-            showinfo("", f"在浏览器中输入您的ip地址:{port}即可上传和下载。")
+            showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
     if __name__ == "__main__":
         serve(app, host='0.0.0.0', port=port, threads=threads)
 except Exception as e:

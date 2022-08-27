@@ -11,6 +11,7 @@
     <meta name="force-rendering" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <script>/*@cc_on window.location.href="https://support.dmeng.net/upgrade-your-browser.html?referrer="+encodeURIComponent(window.location.href); @*/</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -31,50 +32,6 @@
         <input type="file" name="file" multiple="multiple">
         <input type="submit" value="上传">
     </form>
-    <style>
-        @media(prefers-color-scheme:dark) {
-            body {
-                background-color: #111114;
-            }
-
-
-
-            h1 {
-                color: white;
-            }
-
-            a {
-                color: orangered;
-            }
-        }
-
-
-        @media(prefers-color-scheme:light) {
-            body {
-                background-color: #E9FDFF;
-            }
-
-
-
-            h1 {
-                color: black;
-            }
-
-            a {
-                color: blue;
-            }
-        }
-
-
-        h1 {
-            text-align: center;
-        }
-
-
-        input {
-            color: orangered;
-        }
-    </style>
     <script>
         const BACKGROUNDCOLOR = ['#111114', '#E9FDFF']
         const TEXTCOLOR = ['white', 'black']

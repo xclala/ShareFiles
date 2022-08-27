@@ -10,6 +10,7 @@
     <meta name="force-rendering" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <script>/*@cc_on window.location.href="https://support.dmeng.net/upgrade-your-browser.html?referrer="+encodeURIComponent(window.location.href); @*/</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -21,48 +22,6 @@
     {% for fl in filelist %}
     <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
     {% endfor %}
-    <style>
-        @media(prefers-color-scheme:dark) {
-            body {
-                background-color: #111114;
-            }
-
-            h1 {
-                color: white;
-            }
-
-            a {
-                color: orangered;
-            }
-        }
-
-        @media(prefers-color-scheme:light) {
-            body {
-                background-color: whitesmoke;
-            }
-
-            h1 {
-                color: black;
-            }
-
-            a {
-                color: blue;
-            }
-        }
-
-        a {
-            text-decoration-line: none;
-        }
-
-        a:hover {
-            font-weight: bolder;
-        }
-
-        h1,
-        p {
-            text-align: center;
-        }
-    </style>
     <script>
         const BACKGROUNDCOLOR = ['#111114', 'whitesmoke']
         const TEXTCOLOR = ['white', 'black']

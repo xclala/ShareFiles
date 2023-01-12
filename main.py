@@ -14,12 +14,6 @@ try:
     parser.add_argument('--download', action="store_true")
     port = parser.parse_args().port
     threads = parser.parse_args().thread
-    if port is None:
-        from tkinter.simpledialog import askinteger
-        port = askinteger(title="请输入端口", prompt="请输入端口", initialvalue=80)
-    if threads is None:
-        from tkinter.simpledialog import askinteger
-        threads = askinteger(title="请输入线程数", prompt="请输入线程数", initialvalue=4)
     if parser.parse_args().upload:
         if parser.parse_args().download:
             _ = '0'
@@ -31,9 +25,21 @@ try:
         if not parser.parse_args().download:
             root = Tk()
             root.title("请选择")
-            root.geometry("250x100")
+            root.geometry("250x200")
             root.resizable(0, 0)
             root.protocol("WM_DELETE_WINDOW", lambda: ...)
+            if port is None:
+                Label(text="端口：").pack()
+                p = Entry()
+                p.pack()
+                p.insert(0, "80")
+                port = int(p.get())
+            if threads is None:
+                Label(text="线程数：").pack()
+                t = Entry()
+                t.pack()
+                t.insert(0, "4")
+                threads = int(t.get())
             var1 = IntVar()
             var2 = IntVar()
             Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()

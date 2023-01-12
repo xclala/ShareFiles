@@ -86,10 +86,7 @@ def download(port, thread):
 
 
 def upload_download(port, thread, pw, url_prefix):
-    app.add_url_rule('/', view_func=Upload.as_view("index", pw))
-    app.add_url_rule('/del_session',
-                     view_func=DeleteSession.as_view("delsession"))
     app.add_url_rule(f"{url_prefix}", view_func=FileList.as_view("filelist"))
     app.add_url_rule(f"{url_prefix}/<filename>",
                      view_func=DownloadFile.as_view("downloadfile"))
-    serve(app, port=port, threads=thread)
+    upload(port, thread, pw)

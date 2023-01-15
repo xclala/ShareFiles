@@ -79,6 +79,6 @@ try:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
-        upload_download(port, threads, pw_temp.get(), prefix="/filelist")
+        upload_download(port, threads, pw_temp.get())
 except Exception as e:
     print(e)

@@ -87,7 +87,8 @@ class DownloadFile(MethodView):
         if self.password == session.get('password'):
             filepath = path.join("共享的文件/", filename)
             if path.exists("共享的文件/del_session"):
-                rename("共享的文件/del_session", f"共享的文件/{uuid4().hex}")
+                filepath = uuid4().hex
+                rename("共享的文件/del_session", filepath)
             if path.exists(filepath) and path.isfile(filepath):
                 return send_file(filepath)
             abort(404)
@@ -104,15 +105,15 @@ def upload(port, thread, pw):
 
 def download(port, thread, pw):
     app.add_url_rule("/", view_func=FileList.as_view("filelist", pw))
-    app.add_url_rule("/<filename>",
+    app.add_url_rule("/filelist/<filename>",
                      view_func=DownloadFile.as_view("downloadfile", pw))
     app.add_url_rule('/del_session',
                     view_func=DeleteSession.as_view("delsession", "filelist.html"))
     serve(app, port=port, threads=thread)
 
 
-def upload_download(port, thread, pw, url_prefix):
-    app.add_url_rule(f"{url_prefix}", view_func=FileList.as_view("filelist", pw))
-    app.add_url_rule(f"{url_prefix}/<filename>",
+def upload_download(port, thread, pw):
+    app.add_url_rule("/filelist", view_func=FileList.as_view("filelist", pw))
+    app.add_url_rule("/filelist/<filename>",
                      view_func=DownloadFile.as_view("downloadfile", pw))
     upload(port, thread, pw)

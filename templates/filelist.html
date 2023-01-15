@@ -19,6 +19,14 @@
     </a>
     <a href="..">上传文件</a>
     <h1>下载文件</h1>
+    {% block password %}
+    <form action="/" method="post" enctype="multipart/form-data" align="center">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+        <input type="submit" value="确定">
+    </form>
+    <strong>{{ alert_message }}<br></strong>
+    {% endblock %}
     {% for fl in filelist %}
     <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
     {% endfor %}

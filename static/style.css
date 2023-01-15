@@ -1,0 +1,44 @@
+@media(prefers-color-scheme:dark) {
+    body {
+        background-color: #111114;
+    }
+
+    h1 {
+        color: white;
+    }
+
+    a {
+        color: orangered;
+    }
+}
+
+@media(prefers-color-scheme:light) {
+    body {
+        background-color: whitesmoke;
+    }
+
+    h1 {
+        color: black;
+    }
+
+    a {
+        color: blue;
+    }
+}
+
+a {
+    text-decoration-line: none;
+}
+
+a:hover {
+    font-weight: bolder;
+}
+
+h1,
+p {
+    text-align: center;
+}
+
+input {
+    color: orangered;
+}

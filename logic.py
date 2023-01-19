@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, session, abort, send_file
 from flask.views import MethodView
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
-from os import path, urandom, scandir, rename
+from os import path, urandom, scandir
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 
@@ -85,10 +85,7 @@ class DownloadFile(MethodView):
 
     def get(self, filename):
         if self.password == session.get('password'):
-            filepath = path.join("共享的文件/", filename)
-            if path.exists("共享的文件/del_session"):
-                filepath = uuid4().hex
-                rename("共享的文件/del_session", filepath)
+            filepath = path.join("共享的文件/", secure_filename(filename))
             if path.exists(filepath) and path.isfile(filepath):
                 return send_file(filepath)
             abort(404)

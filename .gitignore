@@ -2,5 +2,6 @@
 !main.py
 !templates/
 !static/
+!.github/
 !requirements.txt
 !logic.py

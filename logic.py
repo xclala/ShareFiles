@@ -3,12 +3,68 @@ from flask.views import MethodView
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir
-from werkzeug.utils import secure_filename
 from uuid import uuid4
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
+
+
+def secure_filename(filename):
+    r"""Pass it a filename and it will return a secure version of it.  This
+    filename can then safely be stored on a regular file system and passed
+    to :func:`os.path.join`.
+
+    On windows systems the function also makes sure that the file is not
+    named after one of the special device files.
+
+    >>> secure_filename("My cool movie.mov")
+    'My_cool_movie.mov'
+    >>> secure_filename("../../../etc/passwd")
+    'etc_passwd'
+    >>> secure_filename('i contain cool \xfcml\xe4uts.txt')
+    'i_contain_cool_umlauts.txt'
+
+    The function might return an empty filename.  It's your responsibility
+    to ensure that the filename is unique and that you abort or
+    generate a random filename if the function returned an empty one.
+
+    :param filename: the filename to secure
+    """
+    from unicodedata import normalize
+    from re import compile
+    import os
+    _filename_ascii_strip_re = compile(r"[^A-Za-z0-9_\u4E00-\u9FBF.-]")
+    _windows_device_files = (
+        "CON",
+        "AUX",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "PRN",
+        "NUL",
+    )
+    filename = normalize("NFKD", filename)
+    filename = filename.encode("ascii", "ignore").decode("utf-8")
+
+    for sep in path.sep, path.altsep:
+        if sep:
+            filename = filename.replace(sep, " ")
+    filename = str(_filename_ascii_strip_re.sub("", "_".join(
+        filename.split()))).strip("._")
+
+    # on nt a couple of special files are present in each folder.  We
+    # have to ensure that the target file is not such a filename.  In
+    # this case we prepend an underline
+    if (os.name == "nt" and filename
+            and filename.split(".")[0].upper() in _windows_device_files):
+        filename = f"_{filename}"
+
+    return filename
 
 
 class Upload(MethodView):
@@ -28,7 +84,7 @@ class Upload(MethodView):
             session['password'] = pw
         if session.get("password") == pw:
             for f in request.files.getlist('file'):
-                if f.filename == "":
+                if secure_filename(f.filename) == "":
                     return render_template("index.html",
                                            alert_message="请先选择文件！")
                 if path.exists("共享的文件/" + secure_filename(f.filename)):
@@ -41,6 +97,7 @@ class Upload(MethodView):
 
 
 class DeleteSession(MethodView):
+
     def __init__(self, template):
         self.template = template
 
@@ -51,6 +108,7 @@ class DeleteSession(MethodView):
 
 
 class FileList(MethodView):
+
     def __init__(self, password):
         self.password = password
 
@@ -62,9 +120,13 @@ class FileList(MethodView):
                     filelist.append(fl.name)
             return render_template("download.html", filelist=filelist)
         elif session.get("password") is None:
-            return render_template("filelist.html", filelist='', alert_message='')
+            return render_template("filelist.html",
+                                   filelist='',
+                                   alert_message='')
         else:
-            return render_template("filelist.html", filelist='', alert_message="密码错误！")
+            return render_template("filelist.html",
+                                   filelist='',
+                                   alert_message="密码错误！")
 
     def post(self):
         if request.form['passwd'] == self.password:
@@ -75,7 +137,9 @@ class FileList(MethodView):
                     filelist.append(fl.name)
             return render_template("download.html", filelist=filelist)
         else:
-            return render_template("filelist.html", filelist='', alert_message="密码错误！")
+            return render_template("filelist.html",
+                                   filelist='',
+                                   alert_message="密码错误！")
 
 
 class DownloadFile(MethodView):
@@ -90,13 +154,16 @@ class DownloadFile(MethodView):
                 return send_file(filepath)
             abort(404)
         else:
-            return render_template("filelist.html", filelist='', alert_message="密码错误！")
+            return render_template("filelist.html",
+                                   filelist='',
+                                   alert_message="密码错误！")
 
 
 def upload(port, thread, pw):
     app.add_url_rule('/', view_func=Upload.as_view("index", pw))
     app.add_url_rule('/del_session',
-                     view_func=DeleteSession.as_view("delsession", "index.html"))
+                     view_func=DeleteSession.as_view("delsession",
+                                                     "index.html"))
     serve(app, port=port, threads=thread)
 
 
@@ -105,7 +172,8 @@ def download(port, thread, pw):
     app.add_url_rule("/filelist/<filename>",
                      view_func=DownloadFile.as_view("downloadfile", pw))
     app.add_url_rule('/del_session',
-                    view_func=DeleteSession.as_view("delsession", "filelist.html"))
+                     view_func=DeleteSession.as_view("delsession",
+                                                     "filelist.html"))
     serve(app, port=port, threads=thread)
 
 

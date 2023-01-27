@@ -27,7 +27,6 @@ try:
             root.title("请选择")
             root.geometry("250x250")
             root.resizable(0, 0)
-            root.protocol("WM_DELETE_WINDOW", lambda: ...)
             if port is None:
                 Label(text="端口：").pack()
                 p = Entry()

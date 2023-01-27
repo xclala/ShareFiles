@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, session, abort, send_file
-from flask.views import MethodView
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir
@@ -67,16 +66,8 @@ def secure_filename(filename):
     return filename
 
 
-class Upload(MethodView):
-
-    def __init__(self, password):
-        self.password = password
-
-    def get(self):
-        return render_template('index.html')
-
-    def post(self):
-        pw = self.password
+def upload_view(pw):
+    if request.method == 'POST':
         if session.get("password") is None:
             p = request.form['passwd']
             if p != pw:
@@ -94,26 +85,19 @@ class Upload(MethodView):
                     f.save("共享的文件/" + secure_filename(f.filename))
             return render_template('upload.html', alert_message="文件成功上传！")
         return render_template('index.html', alert_message="密码错误！！！")
+    else:
+        return render_template('index.html')
 
 
-class DeleteSession(MethodView):
-
-    def __init__(self, template):
-        self.template = template
-
-    def get(self):
-        session.clear()
-        session.pop("password", None)
-        return render_template(self.template, alert_message="成功退出登录！")
+def delete_session(template):
+    session.clear()
+    session.pop("password", None)
+    return render_template(template, alert_message="成功退出登录！")
 
 
-class FileList(MethodView):
-
-    def __init__(self, password):
-        self.password = password
-
-    def get(self):
-        if session.get("password") == self.password:
+def filelist(password):
+    if request.method == 'GET':
+        if session.get("password") == password:
             filelist = []
             for fl in scandir("共享的文件"):
                 if fl.is_file():
@@ -127,9 +111,8 @@ class FileList(MethodView):
             return render_template("filelist.html",
                                    filelist='',
                                    alert_message="密码错误！")
-
-    def post(self):
-        if request.form['passwd'] == self.password:
+    if request.method == 'POST':
+        if request.form['passwd'] == password:
             session['password'] = request.form['passwd']
             filelist = []
             for fl in scandir("共享的文件"):
@@ -142,43 +125,32 @@ class FileList(MethodView):
                                    alert_message="密码错误！")
 
 
-class DownloadFile(MethodView):
-
-    def __init__(self, password):
-        self.password = password
-
-    def get(self, filename):
-        if self.password == session.get('password'):
-            filepath = path.join("共享的文件/", secure_filename(filename))
-            if path.exists(filepath) and path.isfile(filepath):
-                return send_file(filepath)
-            abort(404)
-        else:
-            return render_template("filelist.html",
-                                   filelist='',
-                                   alert_message="密码错误！")
+def download_file(password, filename):
+    if password == session.get('password'):
+        filepath = path.join("共享的文件/", secure_filename(filename))
+        if path.exists(filepath) and path.isfile(filepath):
+            return send_file(filepath)
+        abort(404)
+    else:
+        return render_template("filelist.html",
+                               filelist='',
+                               alert_message="密码错误！")
 
 
 def upload(port, thread, pw):
-    app.add_url_rule('/', view_func=Upload.as_view("index", pw))
-    app.add_url_rule('/del_session',
-                     view_func=DeleteSession.as_view("delsession",
-                                                     "index.html"))
+    app.add_url_rule('/', view_func=upload_view(pw))
+    app.add_url_rule('/del_session', view_func=delete_session("index.html"))
     serve(app, port=port, threads=thread)
 
 
 def download(port, thread, pw):
-    app.add_url_rule("/", view_func=FileList.as_view("filelist", pw))
-    app.add_url_rule("/filelist/<filename>",
-                     view_func=DownloadFile.as_view("downloadfile", pw))
-    app.add_url_rule('/del_session',
-                     view_func=DeleteSession.as_view("delsession",
-                                                     "filelist.html"))
+    app.add_url_rule("/", view_func=filelist(pw))
+    app.add_url_rule("/filelist/<filename>", view_func=download_file(pw))
+    app.add_url_rule('/del_session', view_func=delete_session("filelist.html"))
     serve(app, port=port, threads=thread)
 
 
 def upload_download(port, thread, pw):
-    app.add_url_rule("/filelist", view_func=FileList.as_view("filelist", pw))
-    app.add_url_rule("/filelist/<filename>",
-                     view_func=DownloadFile.as_view("downloadfile", pw))
+    app.add_url_rule("/filelist", view_func=filelist(pw))
+    app.add_url_rule("/filelist/<filename>", view_func=download_file(pw))
     upload(port, thread, pw)

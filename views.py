@@ -7,6 +7,8 @@ from uuid import uuid4
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
+password = ''
+template = ''
 
 
 def secure_filename(filename):
@@ -66,14 +68,14 @@ def secure_filename(filename):
     return filename
 
 
-def upload_view(pw):
+def upload_view():
     if request.method == 'POST':
         if session.get("password") is None:
             p = request.form['passwd']
-            if p != pw:
+            if p != password:
                 return render_template('index.html', alert_message="密码错误！！！")
-            session['password'] = pw
-        if session.get("password") == pw:
+            session['password'] = password
+        if session.get("password") == password:
             for f in request.files.getlist('file'):
                 if secure_filename(f.filename) == "":
                     return render_template("index.html",
@@ -89,13 +91,13 @@ def upload_view(pw):
         return render_template('index.html')
 
 
-def delete_session(template):
+def delete_session():
     session.clear()
     session.pop("password", None)
     return render_template(template, alert_message="成功退出登录！")
 
 
-def filelist(password):
+def filelist():
     if request.method == 'GET':
         if session.get("password") == password:
             filelist = []
@@ -125,7 +127,7 @@ def filelist(password):
                                    alert_message="密码错误！")
 
 
-def download_file(password, filename):
+def download_file(filename):
     if password == session.get('password'):
         filepath = path.join("共享的文件/", secure_filename(filename))
         if path.exists(filepath) and path.isfile(filepath):
@@ -138,19 +140,29 @@ def download_file(password, filename):
 
 
 def upload(port, thread, pw):
-    app.add_url_rule('/', view_func=upload_view(pw))
-    app.add_url_rule('/del_session', view_func=delete_session("index.html"))
+    global password
+    global template
+    password = pw
+    template = "index.html"
+    app.add_url_rule('/', view_func=upload_view)
+    app.add_url_rule('/del_session', view_func=delete_session)
     serve(app, port=port, threads=thread)
 
 
 def download(port, thread, pw):
-    app.add_url_rule("/", view_func=filelist(pw))
-    app.add_url_rule("/filelist/<filename>", view_func=download_file(pw))
-    app.add_url_rule('/del_session', view_func=delete_session("filelist.html"))
+    global password
+    global template
+    password = pw
+    template = "filelist.html"
+    app.add_url_rule("/", view_func=filelist)
+    app.add_url_rule("/filelist/<filename>", view_func=download_file)
+    app.add_url_rule('/del_session', view_func=delete_session)
     serve(app, port=port, threads=thread)
 
 
 def upload_download(port, thread, pw):
-    app.add_url_rule("/filelist", view_func=filelist(pw))
-    app.add_url_rule("/filelist/<filename>", view_func=download_file(pw))
+    global password
+    password = pw
+    app.add_url_rule("/filelist", view_func=filelist)
+    app.add_url_rule("/filelist/<filename>", view_func=download_file)
     upload(port, thread, pw)

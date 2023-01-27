@@ -4,4 +4,4 @@
 !static/
 !.github/
 !requirements.txt
-!logic.py
+!views.py

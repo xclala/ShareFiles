@@ -3,7 +3,7 @@ try:
     from os import path, getcwd, mkdir
     from argparse import ArgumentParser
     from tkinter.messagebox import showinfo
-    from logic import upload, download, upload_download
+    from views import upload, download, upload_download
 
     if not path.exists(path.join(getcwd(), "共享的文件")):
         mkdir("共享的文件")

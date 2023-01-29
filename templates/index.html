@@ -1,6 +1,5 @@
-{% block header %}
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-Hans-CN">
 
 <head>
     <meta charset="UTF-8">
@@ -24,31 +23,14 @@
     <form action="/" method="post" enctype="multipart/form-data" align="center">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <strong>{{ alert_message }}</strong>
-        {% endblock %}
         {% block password %}
         <input type="password" name="passwd" placeholder="请输入密码" autofocus>
         {% endblock %}
-        {% block footer %}
         <p></p>
         <input type="file" name="file" multiple="multiple">
         <input type="submit" value="上传">
     </form>
-    <script>
-        const BACKGROUNDCOLOR = ['#111114', '#E9FDFF']
-        const TEXTCOLOR = ['white', 'black']
-        const LINKCOLOR = ['orangered', 'blue']
-        let c = 0
-        document.getElementsByTagName("h1")[0].onclick = function () {
-            document.body.style.backgroundColor = BACKGROUNDCOLOR[c % 2]
-            document.getElementsByTagName("h1")[0].style.color = TEXTCOLOR[c % 2]
-            const LINK = document.getElementsByTagName("a")
-            for (i = 0; i < LINK.length; i++) {
-                LINK[i].style.color = LINKCOLOR[c % 2]
-            }
-            c++
-        }
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
 </html>
-{% endblock %}

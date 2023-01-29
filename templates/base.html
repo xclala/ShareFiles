@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hans-CN">
+{% macro head(title) %}
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="author" content="邢栋">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <script>/*@cc_on window.location.href="https://support.dmeng.net/upgrade-your-browser.html?referrer="+encodeURIComponent(window.location.href); @*/</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+{% endmacro %}
+{% block a %}
+{% endblock a %}
+<body>
+    <a href="https://github.com/xclala/ShareFiles">
+        <img src="https://xclala.gitee.io/github.svg">
+    </a>
+    {% block logic %}
+    {% endblock logic %}
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

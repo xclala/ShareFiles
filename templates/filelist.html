@@ -1,37 +1,20 @@
-<!DOCTYPE html>
-<html lang="zh-Hans-CN">
-
-<head>
-    <meta charset='UTF-8'>
-    <title>下载文件</title>
-    <meta name="author" content="邢栋">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="renderer" content="webkit">
-    <meta name="force-rendering" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    <script>/*@cc_on window.location.href="https://support.dmeng.net/upgrade-your-browser.html?referrer="+encodeURIComponent(window.location.href); @*/</script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-    <a href="https://github.com/xclala/ShareFiles">
-        <img src="https://xclala.gitee.io/github.svg">
-    </a>
-    <a href="..">上传文件</a>
-    <a href="/del_session">退出登录</a>
-    <h1>下载文件</h1>
-    {% block password %}
-    <form action="/" method="post" enctype="multipart/form-data" align="center">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="password" name="passwd" placeholder="请输入密码" autofocus>
-        <input type="submit" value="确定">
-    </form>
-    <strong>{{ alert_message }}<br></strong>
-    {% endblock %}
-    {% for fl in filelist %}
-    <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
-    {% endfor %}
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-
-</html>
+{% extends "base.html" %}
+{% block a %}
+{{ head("下载文件") }}
+{% endblock %}
+{% block logic %}
+<a href="..">上传文件</a>
+<a href="/del_session">退出登录</a>
+<h1>下载文件</h1>
+{% block password %}
+<form action="/" method="post" enctype="multipart/form-data" align="center">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+    <input type="submit" value="确定">
+</form>
+<strong>{{ alert_message }}<br></strong>
+{% endblock %}
+{% for fl in filelist %}
+<p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
+{% endfor %}
+{% endblock %}

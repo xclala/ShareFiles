@@ -17,6 +17,12 @@
         <img src="https://xclala.gitee.io/github.svg">
     </a>
     <a href="/del_session">退出登录</a>
+    {% if self.title() == '上传文件' %}
+        <a href="/filelist">下载文件</a>
+    {% else %}
+        <a href="..">上传文件</a>
+    {% endif %}
+    <h1>{{ self.title() }}</h1>
     {% block logic %}
     {% endblock logic %}
     <script src="{{ url_for('static', filename='script.js') }}"></script>

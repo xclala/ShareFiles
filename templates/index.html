@@ -1,14 +1,2 @@
 {% extends "base.html" %}
 {% block title %}上传文件{% endblock %}
-{% block logic %}
-<form action="/" method="post" enctype="multipart/form-data" align="center">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <strong>{{ alert_message }}</strong>
-    {% block password %}
-    <input type="password" name="passwd" placeholder="请输入密码" autofocus>
-    {% endblock %}
-    <p></p>
-    <input type="file" name="file" multiple="multiple">
-    <input type="submit" value="上传">
-</form>
-{% endblock %}

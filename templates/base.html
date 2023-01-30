@@ -23,8 +23,26 @@
         <a href="..">上传文件</a>
     {% endif %}
     <h1>{{ self.title() }}</h1>
-    {% block logic %}
-    {% endblock logic %}
+    {% block login %}
+    <form action="/" method="post" enctype="multipart/form-data" align="center">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <p></p>
+        {% block password %}
+        <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+        {% endblock %}
+        <strong><br>{{ alert_message }}<br></strong>
+        {% if self.title() == '上传文件' %}
+            <input type="file" name="file" multiple="multiple">
+        {% endif %}
+        <p></p>
+        <input type="submit" value="确定">
+    </form>
+    {% endblock %}
+    {% if self.title() == '下载文件' %}
+        {% for fl in filelist %}
+        <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
+        {% endfor %}
+    {% endif %}
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -1,11 +1,10 @@
 {% extends "base.html" %}
-{% block a %}
-{{ head("下载文件") }}
+{% block title %}
+下载文件
 {% endblock %}
 {% block logic %}
 <a href="..">上传文件</a>
-<a href="/del_session">退出登录</a>
-<h1>下载文件</h1>
+<h1>{{ self.title() }}</h1>
 {% block password %}
 <form action="/" method="post" enctype="multipart/form-data" align="center">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

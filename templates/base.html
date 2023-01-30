@@ -19,7 +19,7 @@
     <a href="/del_session">退出登录</a>
     {% if self.title() == '上传文件' %}
         <a href="/filelist">下载文件</a>
-    {% else %}
+    {% elif self.title() == '下载文件' %}
         <a href="..">上传文件</a>
     {% endif %}
     <h1>{{ self.title() }}</h1>

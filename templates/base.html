@@ -1,8 +1,9 @@
+{% macro main(title, need_form=True, need_password=True) %}
 <!DOCTYPE html>
 <html lang="zh-Hans-CN">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{{ title }}</title>
     <meta name="author" content="邢栋">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="renderer" content="webkit">
@@ -17,28 +18,28 @@
         <img src="https://xclala.gitee.io/github.svg">
     </a>
     <a href="/del_session">退出登录</a>
-    {% if self.title() == '上传文件' %}
+    {% if title == '上传文件' %}
         <a href="/filelist">下载文件</a>
-    {% elif self.title() == '下载文件' %}
+    {% elif title == '下载文件' %}
         <a href="..">上传文件</a>
     {% endif %}
-    <h1>{{ self.title() }}</h1>
-    {% block login %}
+    <h1>{{ title }}</h1>
+    {% if need_form %}
     <form action="/" method="post" enctype="multipart/form-data" align="center">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p></p>
-        {% block password %}
-        <input type="password" name="passwd" placeholder="请输入密码" autofocus>
-        {% endblock %}
+        {% if need_password %}
+            <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+        {% endif %}
         <strong><br>{{ alert_message }}<br></strong>
-        {% if self.title() == '上传文件' %}
+        {% if title == '上传文件' %}
             <input type="file" name="file" multiple="multiple">
         {% endif %}
         <p></p>
         <input type="submit" value="确定">
     </form>
-    {% endblock %}
-    {% if self.title() == '下载文件' %}
+    {% endif %}
+    {% if title == '下载文件' %}
         {% for fl in filelist %}
         <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
         {% endfor %}
@@ -46,3 +47,4 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+{% endmacro %}

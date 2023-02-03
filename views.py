@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, abort, send_file, flash
+from flask import Flask, render_template, request, session, abort, send_file, flash, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir
@@ -88,16 +88,14 @@ def upload_view():
             flash("文件成功上传！")
             return render_template('upload.html')
         flash("密码错误！！！")
-        return render_template('index.html')
-    else:
-        return render_template('index.html')
+    return render_template('index.html')
 
 
 def delete_session():
     session.clear()
     session.pop("password", None)
     flash("成功退出登录！")
-    return render_template(app.config['del_session_template'])
+    return redirect("/")
 
 
 def filelist():
@@ -139,7 +137,6 @@ def download_file(filename):
 
 def upload(port, thread, pw):
     app.config['password'] = pw
-    app.config['del_session_template'] = "index.html"
     app.add_url_rule('/', view_func=upload_view)
     app.add_url_rule('/del_session', view_func=delete_session)
     serve(app, port=port, threads=thread)
@@ -147,7 +144,6 @@ def upload(port, thread, pw):
 
 def download(port, thread, pw):
     app.config['password'] = pw
-    app.config['del_session_template'] = "filelist.html"
     app.add_url_rule("/", view_func=filelist)
     app.add_url_rule("/filelist/<filename>", view_func=download_file)
     app.add_url_rule('/del_session', view_func=delete_session)
@@ -155,7 +151,6 @@ def download(port, thread, pw):
 
 
 def upload_download(port, thread, pw):
-    app.config['password'] = pw
     app.add_url_rule("/filelist", view_func=filelist)
     app.add_url_rule("/filelist/<filename>", view_func=download_file)
     upload(port, thread, pw)

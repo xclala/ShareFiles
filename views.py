@@ -7,8 +7,6 @@ from uuid import uuid4
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(666)
 CSRFProtect(app)
-password = ''
-template = ''
 
 
 def secure_filename(filename):
@@ -70,6 +68,7 @@ def secure_filename(filename):
 
 def upload_view():
     if request.method == 'POST':
+        password = app.config['password']
         if session.get("password") is None:
             p = request.form['passwd']
             if p != password:
@@ -94,10 +93,11 @@ def upload_view():
 def delete_session():
     session.clear()
     session.pop("password", None)
-    return render_template(template, alert_message="成功退出登录！")
+    return render_template(app.config['del_session_template'], alert_message="成功退出登录！")
 
 
 def filelist():
+    password = app.config['password']
     if request.method == 'GET':
         if session.get("password") == password:
             filelist = []
@@ -128,6 +128,7 @@ def filelist():
 
 
 def download_file(filename):
+    password = app.config['password']
     if password == session.get('password'):
         filepath = path.join("共享的文件/", secure_filename(filename))
         if path.exists(filepath) and path.isfile(filepath):
@@ -140,20 +141,16 @@ def download_file(filename):
 
 
 def upload(port, thread, pw):
-    global password
-    global template
-    password = pw
-    template = "index.html"
+    app.config['password'] = pw
+    app.config['del_session_template'] = "index.html"
     app.add_url_rule('/', view_func=upload_view)
     app.add_url_rule('/del_session', view_func=delete_session)
     serve(app, port=port, threads=thread)
 
 
 def download(port, thread, pw):
-    global password
-    global template
-    password = pw
-    template = "filelist.html"
+    app.config['password'] = pw
+    app.config['del_session_template'] = "filelist.html"
     app.add_url_rule("/", view_func=filelist)
     app.add_url_rule("/filelist/<filename>", view_func=download_file)
     app.add_url_rule('/del_session', view_func=delete_session)
@@ -161,8 +158,7 @@ def download(port, thread, pw):
 
 
 def upload_download(port, thread, pw):
-    global password
-    password = pw
+    app.config['password'] = pw
     app.add_url_rule("/filelist", view_func=filelist)
     app.add_url_rule("/filelist/<filename>", view_func=download_file)
     upload(port, thread, pw)

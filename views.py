@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, abort, send_file
+from flask import Flask, render_template, request, session, abort, send_file, flash
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir
@@ -72,20 +72,23 @@ def upload_view():
         if session.get("password") is None:
             p = request.form['passwd']
             if p != password:
-                return render_template('index.html', alert_message="密码错误！！！")
+                flash("密码错误！！！")
+                return render_template('index.html')
             session['password'] = password
         if session.get("password") == password:
             for f in request.files.getlist('file'):
                 if secure_filename(f.filename) == "":
-                    return render_template("index.html",
-                                           alert_message="请先选择文件！")
+                    flash("请先选择文件！")
+                    return render_template("index.html")
                 if path.exists("共享的文件/" + secure_filename(f.filename)):
                     f.save("共享的文件/" + uuid4().hex +
                            path.splitext(f.filename)[1])
                 else:
                     f.save("共享的文件/" + secure_filename(f.filename))
-            return render_template('upload.html', alert_message="文件成功上传！")
-        return render_template('index.html', alert_message="密码错误！！！")
+            flash("文件成功上传！")
+            return render_template('upload.html')
+        flash("密码错误！！！")
+        return render_template('index.html')
     else:
         return render_template('index.html')
 
@@ -93,7 +96,8 @@ def upload_view():
 def delete_session():
     session.clear()
     session.pop("password", None)
-    return render_template(app.config['del_session_template'], alert_message="成功退出登录！")
+    flash("成功退出登录！")
+    return render_template(app.config['del_session_template'])
 
 
 def filelist():
@@ -107,12 +111,7 @@ def filelist():
             return render_template("download.html", filelist=filelist)
         elif session.get("password") is None:
             return render_template("filelist.html",
-                                   filelist='',
-                                   alert_message='')
-        else:
-            return render_template("filelist.html",
-                                   filelist='',
-                                   alert_message="密码错误！")
+                                   filelist='')
     if request.method == 'POST':
         if request.form['passwd'] == password:
             session['password'] = request.form['passwd']
@@ -121,10 +120,9 @@ def filelist():
                 if fl.is_file():
                     filelist.append(fl.name)
             return render_template("download.html", filelist=filelist)
-        else:
-            return render_template("filelist.html",
-                                   filelist='',
-                                   alert_message="密码错误！")
+    flash("密码错误！")
+    return render_template("filelist.html",
+                            filelist='')
 
 
 def download_file(filename):
@@ -134,10 +132,9 @@ def download_file(filename):
         if path.exists(filepath) and path.isfile(filepath):
             return send_file(filepath)
         abort(404)
-    else:
-        return render_template("filelist.html",
-                               filelist='',
-                               alert_message="密码错误！")
+    flash("密码错误！")
+    return render_template("filelist.html",
+                            filelist='')
 
 
 def upload(port, thread, pw):

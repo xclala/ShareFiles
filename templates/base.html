@@ -27,11 +27,17 @@
     {% if need_form %}
     <form action="/" method="post" enctype="multipart/form-data" align="center">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <p></p>
         {% if need_password %}
             <input type="password" name="passwd" placeholder="请输入密码" autofocus>
         {% endif %}
-        <strong><br>{{ alert_message }}<br></strong>
         {% if title == '上传文件' %}
             <input type="file" name="file" multiple="multiple">
         {% endif %}

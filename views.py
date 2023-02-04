@@ -99,28 +99,21 @@ def delete_session():
 
 
 def filelist():
-    password = app.config['password']
-    if request.method == 'GET':
-        if session.get("password") == password:
-            filelist = []
-            for fl in scandir("共享的文件"):
-                if fl.is_file():
-                    filelist.append(fl.name)
-            return render_template("download.html", filelist=filelist)
-        elif session.get("password") is None:
-            return render_template("filelist.html",
-                                   filelist='')
     if request.method == 'POST':
-        if request.form['passwd'] == password:
-            session['password'] = request.form['passwd']
+        password = app.config['password']
+        if session.get(
+                "password") == password or request.form['passwd'] == password:
+            if request.form['passwd'] == password:
+                session['password'] = request.form['passwd']
             filelist = []
             for fl in scandir("共享的文件"):
                 if fl.is_file():
                     filelist.append(fl.name)
             return render_template("download.html", filelist=filelist)
-    flash("密码错误！")
-    return render_template("filelist.html",
-                            filelist='')
+        elif session.get(
+                "password") != password or request.form['passwd'] != password:
+            flash("密码错误！")
+    return render_template("filelist.html", filelist='')
 
 
 def download_file(filename):
@@ -131,26 +124,29 @@ def download_file(filename):
             return send_file(filepath)
         abort(404)
     flash("密码错误！")
-    return render_template("filelist.html",
-                            filelist='')
+    return render_template("filelist.html", filelist='')
 
 
 def upload(port, thread, pw):
     app.config['password'] = pw
-    app.add_url_rule('/', view_func=upload_view)
-    app.add_url_rule('/del_session', view_func=delete_session)
+    app.add_url_rule('/', view_func=upload_view, methods=['GET', 'POST'])
+    app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
 def download(port, thread, pw):
     app.config['password'] = pw
-    app.add_url_rule("/", view_func=filelist)
-    app.add_url_rule("/filelist/<filename>", view_func=download_file)
-    app.add_url_rule('/del_session', view_func=delete_session)
+    app.add_url_rule("/", view_func=filelist, methods=['GET', 'POST'])
+    app.add_url_rule("/filelist/<filename>",
+                     view_func=download_file,
+                     methods=['GET'])
+    app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
 def upload_download(port, thread, pw):
-    app.add_url_rule("/filelist", view_func=filelist)
-    app.add_url_rule("/filelist/<filename>", view_func=download_file)
+    app.add_url_rule("/filelist", view_func=filelist, methods=['GET', 'POST'])
+    app.add_url_rule("/filelist/<filename>",
+                     view_func=download_file,
+                     methods=['GET'])
     upload(port, thread, pw)

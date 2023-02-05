@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, abort, send_file, flash, url_for
+from flask import Flask, render_template, request, session, abort, send_file, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir
@@ -72,9 +72,9 @@ def login():
             if request.form['passwd'] == password:
                 session['password'] = request.form['passwd']
             if app.config['mode'] == 'upload':
-                return url_for('upload_view')
+                return redirect(url_for('upload_view'))
             elif app.config['mode'] == 'download':
-                return url_for('filelist')
+                return redirect(url_for('filelist'))
             else:
                 ...
                 #之后继续编既上传又下载的情况
@@ -97,14 +97,14 @@ def upload_view():
                     f.save("共享的文件/" + secure_filename(f.filename))
             flash("文件成功上传！")
         return render_template('upload.html')
-    return url_for('login')
+    return redirect(url_for('login'))
 
 
 def delete_session():
     session.clear()
     session.pop("password", None)
     flash("成功退出登录！")
-    return url_for('login')
+    return redirect(url_for('login'))
 
 
 def filelist():
@@ -114,7 +114,7 @@ def filelist():
             if fl.is_file():
                 filelist.append(fl.name)
         return render_template("download.html", filelist=filelist)
-    return url_for('login')
+    return redirect(url_for('login'))
 
 
 def download_file(filename):
@@ -123,13 +123,14 @@ def download_file(filename):
         if path.exists(filepath) and path.isfile(filepath):
             return send_file(filepath)
         abort(404)
-    return url_for('login')
+    return redirect(url_for('login'))
 
 
 def upload(port, thread, pw):
     app.config['password'] = pw
     app.config['mode'] = 'upload'
     app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
+    app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
     serve(app, port=port, threads=thread)
 
@@ -138,6 +139,7 @@ def download(port, thread, pw):
     app.config['password'] = pw
     app.config['mode'] = 'download'
     app.add_url_rule("/", view_func=login, methods=['GET', 'POST'])
+    app.add_url_rule('/filelist', view_func=filelist, methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
                      view_func=download_file,
                      methods=['GET'])
@@ -149,6 +151,7 @@ def upload_download(port, thread, pw):
     app.config['password'] = pw
     app.config['mode'] = 'upload_download'
     app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
+    app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
                     view_func=download_file,
                     methods=['GET'])

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {%- block title -%}上传文件{%- endblock -%}
 {% block logic %}
-    <form action="/" method="post" enctype="multipart/form-data" align="center">
+    <form action="/upload" method="post" enctype="multipart/form-data" align="center">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="file" name="file" multiple="multiple">
         <input type="submit" value="确定">

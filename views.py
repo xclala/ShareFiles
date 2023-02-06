@@ -65,10 +65,12 @@ def secure_filename(filename):
 
     return filename
 
+
 def login():
     if request.method == 'POST':
         password = app.config['password']
-        if session.get("password") == password or request.form['passwd'] == password:
+        if session.get(
+                "password") == password or request.form['passwd'] == password:
             if request.form['passwd'] == password:
                 session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
@@ -80,8 +82,8 @@ def login():
             flash("密码错误！")
     return render_template('login.html')
 
+
 def upload_view():
-    #出现400 Bad Request
     if session.get("password") == app.config['password']:
         if request.method == 'POST':
             for f in request.files.getlist('file'):
@@ -90,13 +92,15 @@ def upload_view():
                     return render_template("upload.html")
                 if path.exists("共享的文件/" + secure_filename(f.filename)):
                     f.save("共享的文件/" + uuid4().hex +
-                            path.splitext(f.filename)[1])
+                           path.splitext(f.filename)[1])
                 else:
                     f.save("共享的文件/" + secure_filename(f.filename))
             flash("文件成功上传！")
         if app.config['mode'] == 'upload':
             return render_template('upload.html')
-        return render_template('upload.html', filelist=filelist(), title="共享文件")
+        return render_template('upload.html',
+                               filelist=filelist(),
+                               title="共享文件")
     return redirect(url_for('login'))
 
 
@@ -106,12 +110,14 @@ def delete_session():
     flash("成功退出登录！")
     return redirect(url_for('login'))
 
+
 def filelist():
     filelist = []
     for fl in scandir("共享的文件"):
         if fl.is_file():
             filelist.append(fl.name)
     return filelist
+
 
 def filelist_view():
     if session.get("password") == app.config['password']:
@@ -141,7 +147,9 @@ def download(port, thread, pw):
     app.config['password'] = pw
     app.config['mode'] = 'download'
     app.add_url_rule("/", view_func=login, methods=['GET', 'POST'])
-    app.add_url_rule('/filelist', view_func=filelist_view, methods=['GET', 'POST'])
+    app.add_url_rule('/filelist',
+                     view_func=filelist_view,
+                     methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
                      view_func=download_file,
                      methods=['GET'])
@@ -155,8 +163,7 @@ def upload_download(port, thread, pw):
     app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
-                    view_func=download_file,
-                    methods=['GET'])
+                     view_func=download_file,
+                     methods=['GET'])
     app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
     serve(app, port=port, threads=thread)
-#upload() download() upload_download() 这3个函数之后用类重构

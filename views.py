@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, abort, send_file, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
-from os import path, urandom, scandir, remove
+from os import path, urandom, scandir, remove, rename
 from uuid import uuid4
 
 app = Flask(__name__)
@@ -115,7 +115,14 @@ def filelist():
     filelist = []
     for fl in scandir("共享的文件"):
         if fl.is_file():
-            filelist.append(fl.name)
+            try:
+                if secure_filename(fl.name):
+                    rename(fl.name, secure_filename(fl.name))
+                else:
+                    raise FileExistsError
+            except FileExistsError:
+                rename(fl.name, uuid4().hex + path.splitext(fl.name)[1])
+            filelist.append(secure_filename(fl.name))
     return filelist
 
 

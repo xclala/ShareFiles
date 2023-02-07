@@ -3,7 +3,7 @@
         background-color: #111114;
     }
 
-    h1,strong {
+    h1,h6 {
         color: white;
     }
 
@@ -17,7 +17,7 @@
         background-color: whitesmoke;
     }
 
-    h1,strong {
+    h1, h6 {
         color: black;
     }
 
@@ -34,7 +34,7 @@ a:hover {
     font-weight: bolder;
 }
 
-h1,strong {
+h1, h6 {
     text-align: center;
 }
 

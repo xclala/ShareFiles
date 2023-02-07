@@ -27,9 +27,12 @@
     {% endwith %}
     {% block logic %}
     {% endblock %}
+    <div id="filelist">
     {% for fl in filelist %}
-    <p><a href="/filelist/{{ fl }}">{{ fl }}<br></a></p>
+        <a href="/filelist/{{ fl }}">{{ fl }}</a>
+        <a href="/delete/{{ fl }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;删除<br></a>
     {% endfor %}
+    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

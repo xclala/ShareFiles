@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, abort, send_file, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
-from os import path, urandom, scandir
+from os import path, urandom, scandir, remove
 from uuid import uuid4
 
 app = Flask(__name__)
@@ -33,7 +33,7 @@ def secure_filename(filename):
     from unicodedata import normalize
     from re import compile
     import os
-    _filename_ascii_strip_re = compile(r"[^A-Za-z0-9_\u4E00-\u9FBF.-]")
+    _filename_gbk_strip_re = compile(u"[^\u4e00-\u9fa5A-Za-z0-9_.-]")
     _windows_device_files = (
         "CON",
         "AUX",
@@ -48,12 +48,12 @@ def secure_filename(filename):
         "NUL",
     )
     filename = normalize("NFKD", filename)
-    filename = filename.encode("ascii", "ignore").decode("utf-8")
+    filename = filename.encode("utf-8", "ignore").decode("utf-8")
 
     for sep in path.sep, path.altsep:
         if sep:
             filename = filename.replace(sep, " ")
-    filename = str(_filename_ascii_strip_re.sub("", "_".join(
+    filename = str(_filename_gbk_strip_re.sub("", "_".join(
         filename.split()))).strip("._")
 
     # on nt a couple of special files are present in each folder.  We
@@ -134,16 +134,34 @@ def download_file(filename):
     return redirect(url_for('login'))
 
 
-def upload(port, thread, pw):
+def delete_file(filename):
+    if app.config['password'] == session.get('password'):
+        if app.config['file_can_be_deleted']:
+            filepath = path.join("共享的文件/", secure_filename(filename))
+            if path.exists(filepath) and path.isfile(filepath):
+                remove(filepath)
+                flash("文件成功删除！")
+            else:
+                flash("文件不存在！")
+        else:
+            flash("此文件不可被删除！")
+        return redirect(url_for('filelist_view'))
+    return redirect(url_for('login'))
+
+
+def upload(port, thread, pw, file_can_be_deleted):
+    app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'upload'
     app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
+    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
-def download(port, thread, pw):
+def download(port, thread, pw, file_can_be_deleted):
+    app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'download'
     app.add_url_rule("/", view_func=login, methods=['GET', 'POST'])
@@ -154,10 +172,12 @@ def download(port, thread, pw):
                      view_func=download_file,
                      methods=['GET'])
     app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
+    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
-def upload_download(port, thread, pw):
+def upload_download(port, thread, pw, file_can_be_deleted):
+    app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'upload_download'
     app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
@@ -166,4 +186,5 @@ def upload_download(port, thread, pw):
                      view_func=download_file,
                      methods=['GET'])
     app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
+    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
     serve(app, port=port, threads=thread)

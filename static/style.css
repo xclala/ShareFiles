@@ -34,11 +34,15 @@ a:hover {
     font-weight: bolder;
 }
 
-h1,
-p {
+h1,strong {
     text-align: center;
 }
 
 input {
     color: orangered;
+}
+
+#filelist {
+    margin: 0 auto;
+    text-align: center;
 }

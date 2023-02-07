@@ -42,12 +42,18 @@ try:
             var1 = IntVar()
             var2 = IntVar()
             pw_temp = StringVar()
+            file_can_be_deleted = IntVar()
             Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
             Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
+            Checkbutton(root, text="允许他人删除“共享的文件”文件夹中的文件", variable=file_can_be_deleted).pack()
             Label(text="密码：").pack()
             Entry(textvariable=pw_temp, show="*").pack()
             Button(root, text="确定", command=root.destroy).pack()
             mainloop()
+            if file_can_be_deleted.get() == 1:
+                file_can_be_deleted = True
+            else:
+                file_can_be_deleted = False
             if var1.get() == 1 and var2.get() == 1:
                 _ = '0'  #既上传又下载
             elif var1.get() == 1:
@@ -66,18 +72,18 @@ try:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
-        upload(port, threads, pw_temp.get())
+        upload(port, threads, pw_temp.get(), file_can_be_deleted)
     elif _ == '2':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
-        download(port, threads, pw_temp.get())
+        download(port, threads, pw_temp.get(), file_can_be_deleted)
     elif _ == '0':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
-        upload_download(port, threads, pw_temp.get())
+        upload_download(port, threads, pw_temp.get(), file_can_be_deleted)
 except Exception as e:
     print(e)

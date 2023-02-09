@@ -135,7 +135,7 @@ def filelist_view():
 def download_file(filename):
     if app.config['password'] == session.get('password'):
         filepath = path.join("共享的文件/", secure_filename(filename))
-        if path.exists(filepath) and path.isfile(filepath):
+        if path.isfile(filepath):
             return send_file(filepath)
         abort(404)
     return redirect(url_for('login'))
@@ -145,7 +145,7 @@ def delete_file(filename):
     if app.config['password'] == session.get('password'):
         if app.config['file_can_be_deleted']:
             filepath = path.join("共享的文件/", secure_filename(filename))
-            if path.exists(filepath) and path.isfile(filepath):
+            if path.isfile(filepath):
                 remove(filepath)
                 flash("文件成功删除！")
             else:

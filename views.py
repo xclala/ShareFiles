@@ -66,6 +66,19 @@ def secure_filename(filename):
     return filename
 
 
+@app.before_request
+def is_login():
+    if request.path == url_for('login'):
+        return None
+    if request.path == url_for('static', filename='style.css'):
+        return None
+    if request.path == url_for('static', filename='script.js'):
+        return None
+    if session.get("password") == app.config['password']:
+        return None
+    return redirect(url_for('login'))
+
+
 def login():
     if request.method == 'POST':
         password = app.config['password']
@@ -84,24 +97,19 @@ def login():
 
 
 def upload_view():
-    if session.get("password") == app.config['password']:
-        if request.method == 'POST':
-            for f in request.files.getlist('file'):
-                if not secure_filename(f.filename):
-                    flash("请先选择文件！")
-                    return render_template("upload.html")
-                if path.exists("共享的文件/" + secure_filename(f.filename)):
-                    f.save("共享的文件/" + uuid4().hex +
-                           path.splitext(f.filename)[1])
-                else:
-                    f.save("共享的文件/" + secure_filename(f.filename))
-            flash("文件成功上传！")
-        if app.config['mode'] == 'upload':
-            return render_template('upload.html')
-        return render_template('upload.html',
-                               filelist=filelist(),
-                               title="共享文件")
-    return redirect(url_for('login'))
+    if request.method == 'POST':
+        for f in request.files.getlist('file'):
+            if not secure_filename(f.filename):
+                flash("请先选择文件！")
+                return render_template("upload.html")
+            if path.exists("共享的文件/" + secure_filename(f.filename)):
+                f.save("共享的文件/" + uuid4().hex + path.splitext(f.filename)[1])
+            else:
+                f.save("共享的文件/" + secure_filename(f.filename))
+        flash("文件成功上传！")
+    if app.config['mode'] == 'upload':
+        return render_template('upload.html')
+    return render_template('upload.html', filelist=filelist(), title="共享文件")
 
 
 def delete_session():
@@ -127,43 +135,37 @@ def filelist():
 
 
 def filelist_view():
-    if session.get("password") == app.config['password']:
-        return render_template("download.html", filelist=filelist())
-    return redirect(url_for('login'))
+    return render_template("download.html", filelist=filelist())
 
 
 def download_file(filename):
-    if app.config['password'] == session.get('password'):
-        filepath = path.join("共享的文件/", secure_filename(filename))
-        if path.isfile(filepath):
-            return send_file(filepath)
-        abort(404)
-    return redirect(url_for('login'))
+    filepath = path.join("共享的文件/", secure_filename(filename))
+    if path.isfile(filepath):
+        return send_file(filepath)
+    abort(404)
 
 
 def delete_file(filename):
-    if app.config['password'] == session.get('password'):
-        if app.config['file_can_be_deleted']:
-            filepath = path.join("共享的文件/", secure_filename(filename))
-            if path.isfile(filepath):
-                remove(filepath)
-                flash("文件成功删除！")
-            else:
-                flash("文件不存在！")
+    if app.config['file_can_be_deleted']:
+        filepath = path.join("共享的文件/", secure_filename(filename))
+        if path.isfile(filepath):
+            remove(filepath)
+            flash("文件成功删除！")
         else:
-            flash("此文件不可被删除！")
-        return redirect(url_for('filelist_view'))
-    return redirect(url_for('login'))
+            flash("文件不存在！")
+    else:
+        flash("此文件不可被删除！")
+    return redirect(url_for('filelist_view'))
 
 
-def upload(port, thread, pw, file_can_be_deleted):
-    app.config['file_can_be_deleted'] = file_can_be_deleted
+app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
+app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
+
+
+def upload(port, thread, pw):
     app.config['password'] = pw
     app.config['mode'] = 'upload'
-    app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
-    app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
-    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
@@ -171,15 +173,15 @@ def download(port, thread, pw, file_can_be_deleted):
     app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'download'
-    app.add_url_rule("/", view_func=login, methods=['GET', 'POST'])
     app.add_url_rule('/filelist',
                      view_func=filelist_view,
                      methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
                      view_func=download_file,
                      methods=['GET'])
-    app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
-    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
+    app.add_url_rule('/delete/<filename>',
+                     view_func=delete_file,
+                     methods=['GET'])
     serve(app, port=port, threads=thread)
 
 
@@ -187,11 +189,11 @@ def upload_download(port, thread, pw, file_can_be_deleted):
     app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'upload_download'
-    app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule("/filelist/<filename>",
                      view_func=download_file,
                      methods=['GET'])
-    app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
-    app.add_url_rule('/delete/<filename>', view_func=delete_file, methods=['GET'])
+    app.add_url_rule('/delete/<filename>',
+                     view_func=delete_file,
+                     methods=['GET'])
     serve(app, port=port, threads=thread)

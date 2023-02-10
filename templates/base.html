@@ -17,7 +17,7 @@
     <a href="https://github.com/xclala/ShareFiles">
         <img src="https://xclala.gitee.io/github.svg">
     </a>
-    <a href="{{ url_for('del_session') }}">退出登录</a>
+    <a href="{{ url_for('delete_session') }}">退出登录</a>
     <h1>{{ self.title() }}</h1>
     {% with messages = get_flashed_messages() %}
     {% if messages %}

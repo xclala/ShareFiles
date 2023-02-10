@@ -23,7 +23,7 @@ jobs:
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@v0.4
         with:
-          script-name: ./main.py
+          script-name: ./app.py
           onefile: true
           standalone: true
           disable-console: true

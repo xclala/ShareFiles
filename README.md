@@ -1,6 +1,6 @@
 # ShareFiles
 共享文件的源代码
-usage: main.py [-h] [-p PORT] [-t THREAD] [--upload] [--download]
+usage: app.py [-h] [-p PORT] [-t THREAD] [--upload] [--download] [--debug]
 
 options:
   -h, --help            show this help message and exit
@@ -8,3 +8,4 @@ options:
   -t THREAD, --thread THREAD
   --upload
   --download
+  --debug

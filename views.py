@@ -162,14 +162,17 @@ app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
-def upload(port, thread, pw):
+def upload(port, thread, pw, debug_mode=False):
     app.config['password'] = pw
     app.config['mode'] = 'upload'
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
-    serve(app, port=port, threads=thread)
+    if debug_mode:
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
+    else:
+        serve(app, port=port, threads=thread)
 
 
-def download(port, thread, pw, file_can_be_deleted):
+def download(port, thread, pw, file_can_be_deleted, debug_mode=False):
     app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'download'
@@ -182,10 +185,13 @@ def download(port, thread, pw, file_can_be_deleted):
     app.add_url_rule('/delete/<filename>',
                      view_func=delete_file,
                      methods=['GET'])
-    serve(app, port=port, threads=thread)
+    if debug_mode:
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
+    else:
+        serve(app, port=port, threads=thread)
 
 
-def upload_download(port, thread, pw, file_can_be_deleted):
+def upload_download(port, thread, pw, file_can_be_deleted, debug_mode=False):
     app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw
     app.config['mode'] = 'upload_download'
@@ -196,4 +202,7 @@ def upload_download(port, thread, pw, file_can_be_deleted):
     app.add_url_rule('/delete/<filename>',
                      view_func=delete_file,
                      methods=['GET'])
-    serve(app, port=port, threads=thread)
+    if debug_mode:
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
+    else:
+        serve(app, port=port, threads=thread)

@@ -12,6 +12,8 @@ try:
     parser.add_argument('-t', '--thread', type=int)
     parser.add_argument('--upload', action="store_true")
     parser.add_argument('--download', action="store_true")
+    parser.add_argument('--debug', action="store_true")
+    debug_mode = parser.parse_args().debug
     port = parser.parse_args().port
     threads = parser.parse_args().thread
     if parser.parse_args().upload:
@@ -74,18 +76,18 @@ try:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
-        upload(port, threads, pw_temp.get())
+        upload(port, threads, pw_temp.get(), debug_mode=debug_mode)
     elif _ == '2':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
-        download(port, threads, pw_temp.get(), file_can_be_deleted)
+        download(port, threads, pw_temp.get(), file_can_be_deleted, debug_mode=debug_mode)
     elif _ == '0':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
-        upload_download(port, threads, pw_temp.get(), file_can_be_deleted)
+        upload_download(port, threads, pw_temp.get(), file_can_be_deleted, debug_mode=debug_mode)
 except Exception as e:
     print(e)

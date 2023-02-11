@@ -5,7 +5,9 @@ let c = 0
 document.getElementsByTagName("h1")[0].onclick = function () {
     document.body.style.backgroundColor = BACKGROUNDCOLOR[c % 2]
     document.getElementsByTagName("h1")[0].style.color = TEXTCOLOR[c % 2]
-    document.getElementsByTagName("h6")[0].style.color = TEXTCOLOR[c % 2]
+    if (document.getElementsByTagName("h6").style != undefined){
+        document.getElementsByTagName("h6")[0].style.color = TEXTCOLOR[c % 2]
+    }
     let xx = document.getElementsByTagName("a")
     for (let i = 0; i < xx.length; i++) {
         xx[i].style.color = LINKCOLOR[c % 2]

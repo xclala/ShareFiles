@@ -3,7 +3,8 @@ try:
     from os import path, mkdir
     from argparse import ArgumentParser
     from tkinter.messagebox import showinfo
-    from views import upload, download, upload_download
+    from views import upload, download
+    from waitress import serve
 
     if not path.isdir("共享的文件"):
         mkdir("共享的文件")
@@ -20,9 +21,9 @@ try:
     threads = parser.parse_args().thread
     if parser.parse_args().upload and parser.parse_args().download:
         mode = 'upload_download'
-    if parser.parse_args().upload:
+    elif parser.parse_args().upload:
         mode = 'upload'
-    if parser.parse_args().download:
+    elif parser.parse_args().download:
         mode = 'download'
     else:
         root = Tk()
@@ -75,18 +76,29 @@ try:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
-        upload(port, threads, pw_temp.get(), debug_mode=debug_mode)
+        app = upload()
+        app.config['mode'] = 'upload'
     elif mode == 'download':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
-        download(port, threads, pw_temp.get(), file_can_be_deleted, debug_mode=debug_mode)
+        app = download()
+        app.config['mode'] = 'download'
+        app.config['file_can_be_deleted'] = file_can_be_deleted
     else:
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
-        upload_download(port, threads, pw_temp.get(), file_can_be_deleted, debug_mode=debug_mode)
+        upload()
+        app = download()
+        app.config['mode'] = 'upload_download'
+        app.config['file_can_be_deleted'] = file_can_be_deleted
+    app.config['password'] = pw_temp.get()
+    if debug_mode:
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
+    else:
+        serve(app, port=port, threads=threads)
 except Exception as e:
     print(e)

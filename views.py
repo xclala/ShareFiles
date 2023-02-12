@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, session, abort, send_from_directory, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
-from waitress import serve
 from os import path, urandom, scandir, remove, rename
 from uuid import uuid4
 
@@ -164,20 +163,12 @@ app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
-def upload(port, thread, pw, debug_mode=False):
-    app.config['password'] = pw
-    app.config['mode'] = 'upload'
+def upload():
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
-    if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
-    else:
-        serve(app, port=port, threads=thread)
+    return app
 
 
-def download(port, thread, pw, file_can_be_deleted, debug_mode=False):
-    app.config['file_can_be_deleted'] = file_can_be_deleted
-    app.config['password'] = pw
-    app.config['mode'] = 'download'
+def download():
     app.add_url_rule('/filelist',
                      view_func=filelist_view,
                      methods=['GET', 'POST'])
@@ -187,24 +178,4 @@ def download(port, thread, pw, file_can_be_deleted, debug_mode=False):
     app.add_url_rule('/delete/<filename>',
                      view_func=delete_file,
                      methods=['GET'])
-    if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
-    else:
-        serve(app, port=port, threads=thread)
-
-
-def upload_download(port, thread, pw, file_can_be_deleted, debug_mode=False):
-    app.config['file_can_be_deleted'] = file_can_be_deleted
-    app.config['password'] = pw
-    app.config['mode'] = 'upload_download'
-    app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
-    app.add_url_rule("/filelist/<filename>",
-                     view_func=download_file,
-                     methods=['GET'])
-    app.add_url_rule('/delete/<filename>',
-                     view_func=delete_file,
-                     methods=['GET'])
-    if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
-    else:
-        serve(app, port=port, threads=thread)
+    return app

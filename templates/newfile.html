@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{%- block title -%}新建文件{%- endblock -%}
+{% block logic %}
+<form action="{{ url_for('newfile') }}" method="post" enctype="multipart/form-data" align="center">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="text" name="filename" placeholder="文件名" autofocus>
+    <p></p>
+    <textarea name="content" rows="30" cols="100" placeholder="请输入文件内容"></textarea>
+    <p></p>
+    <input type="submit" value="新建">
+</form>
+{% endblock %}

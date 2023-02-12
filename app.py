@@ -97,7 +97,7 @@ try:
         app.config['file_can_be_deleted'] = file_can_be_deleted
     app.config['password'] = pw_temp.get()
     if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
     else:
         serve(app, port=port, threads=threads)
 except Exception as e:

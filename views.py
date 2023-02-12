@@ -79,8 +79,12 @@ def is_login():
 
 
 def login():
+    password = app.config['password']
+    if session.get("password") == password:
+        if app.config['mode'] == 'download':
+            return redirect(url_for('filelist_view'))
+        return redirect(url_for('upload_view'))
     if request.method == 'POST':
-        password = app.config['password']
         if session.get(
                 "password") == password or request.form['passwd'] == password:
             if request.form['passwd'] == password:
@@ -159,12 +163,25 @@ def delete_file(filename):
     return redirect(url_for('filelist_view'))
 
 
+def newfile():
+    if request.method == 'POST':
+        if secure_filename(request.form['filename']):
+            filepath = path.join("共享的文件/", secure_filename(request.form['filename']))
+            with open(filepath, 'w', encoding='utf-8') as file_object:
+                file_object.write(request.form['content'])
+            flash("成功新建文件！")
+            return redirect('/')
+        flash("请输入正确的文件名！")
+    return render_template('newfile.html')
+
+
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
 def upload():
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
+    app.add_url_rule('/newfile', view_func=newfile, methods=['GET', 'POST'])
     return app
 
 

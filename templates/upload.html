@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {%- block title -%}上传文件{%- endblock -%}
 {% block logic %}
+<a href="{{ url_for('newfile') }}">新建文件</a>
 <form action="{{ url_for('upload_view') }}" method="post" enctype="multipart/form-data" align="center">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="file" name="file" multiple="multiple">

@@ -205,6 +205,6 @@ def upload_download(port, thread, pw, file_can_be_deleted, debug_mode=False):
                      view_func=delete_file,
                      methods=['GET'])
     if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
     else:
         serve(app, port=port, threads=thread)

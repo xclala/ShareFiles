@@ -1,11 +1,11 @@
 try:
     from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, IntVar, Checkbutton
-    from os import path, getcwd, mkdir
+    from os import path, mkdir
     from argparse import ArgumentParser
     from tkinter.messagebox import showinfo
     from views import upload, download, upload_download
 
-    if not path.exists(path.join(getcwd(), "共享的文件")):
+    if not path.isdir("共享的文件"):
         mkdir("共享的文件")
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', type=int)
@@ -13,16 +13,17 @@ try:
     parser.add_argument('--upload', action="store_true")
     parser.add_argument('--download', action="store_true")
     parser.add_argument('--debug', action="store_true")
+    parser.add_argument('--file_can_be_deleted', action="store_true")
+    file_can_be_deleted = parser.parse_args().file_can_be_deleted
     debug_mode = parser.parse_args().debug
     port = parser.parse_args().port
     threads = parser.parse_args().thread
+    if parser.parse_args().upload and parser.parse_args().download:
+        mode = 'upload_download'
     if parser.parse_args().upload:
-        if parser.parse_args().download:
-            _ = '0'
-        else:
-            _ = '1'
+        mode = 'upload'
     if parser.parse_args().download:
-        _ = '2'
+        mode = 'download'
     if not parser.parse_args().upload:
         if not parser.parse_args().download:
             root = Tk()
@@ -39,7 +40,7 @@ try:
                 Label(text="线程数：").pack()
                 t = Entry()
                 t.pack()
-                t.insert(0, "4")
+                t.insert(0, "6")
                 threads = int(t.get())
             var1 = IntVar()
             var2 = IntVar()
@@ -47,43 +48,43 @@ try:
             file_can_be_deleted = IntVar()
             Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
             Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
-            Checkbutton(root,
-                        text="允许他人删除“共享的文件”文件夹中的文件",
-                        variable=file_can_be_deleted).pack()
+            if not file_can_be_deleted:
+                file_can_be_deleted = StringVar()
+                Checkbutton(root,
+                            text="允许他人删除“共享的文件”文件夹中的文件",
+                            onvariable=file_can_be_deleted, 
+                            onvalue=True, offvalue=False).pack()
+                file_can_be_deleted = file_can_be_deleted.get()
             Label(text="密码：").pack()
             Entry(textvariable=pw_temp, show="*").pack()
             Button(root, text="确定", command=root.destroy).pack()
             mainloop()
-            if file_can_be_deleted.get() == 1:
-                file_can_be_deleted = True
-            else:
-                file_can_be_deleted = False
             if var1.get() == 1 and var2.get() == 1:
-                _ = '0'  #既上传又下载
+                mode = 'upload_download'
             elif var1.get() == 1:
-                _ = '1'  #上传
+                mode = 'upload'
             elif var2.get() == 1:
-                _ = '2'  #下载
+                mode = 'download'
             else:
-                _ = '0'
-    if port is None or port <= 0:
+                mode = 'upload_download'
+    if port is None or port <= 0 or port >= 65535:
         port = 80
     if threads is None or threads <= 0:
         threads = 4
 
-    if _ == '1':
+    if mode == 'upload':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
         upload(port, threads, pw_temp.get(), debug_mode=debug_mode)
-    elif _ == '2':
+    elif mode == 'download':
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
         else:
             showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
         download(port, threads, pw_temp.get(), file_can_be_deleted, debug_mode=debug_mode)
-    elif _ == '0':
+    else:
         if port == 80:
             showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
         else:

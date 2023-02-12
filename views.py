@@ -169,7 +169,7 @@ def upload(port, thread, pw, debug_mode=False):
     app.config['mode'] = 'upload'
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     if debug_mode:
-        app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
+        app.run(port=port, debug=True, use_debugger=True, use_reloader=True)
     else:
         serve(app, port=port, threads=thread)
 

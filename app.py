@@ -24,49 +24,47 @@ try:
         mode = 'upload'
     if parser.parse_args().download:
         mode = 'download'
-    if not parser.parse_args().upload:
-        if not parser.parse_args().download:
-            root = Tk()
-            root.title("请选择")
-            root.geometry("250x250")
-            root.resizable(0, 0)
-            if port is None:
-                Label(text="端口：").pack()
-                p = Entry()
-                p.pack()
-                p.insert(0, "80")
-                port = int(p.get())
-            if threads is None:
-                Label(text="线程数：").pack()
-                t = Entry()
-                t.pack()
-                t.insert(0, "6")
-                threads = int(t.get())
-            var1 = IntVar()
-            var2 = IntVar()
-            pw_temp = StringVar()
-            file_can_be_deleted = IntVar()
-            Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
-            Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
-            if not file_can_be_deleted:
-                file_can_be_deleted = StringVar()
-                Checkbutton(root,
-                            text="允许他人删除“共享的文件”文件夹中的文件",
-                            onvariable=file_can_be_deleted, 
-                            onvalue=True, offvalue=False).pack()
-                file_can_be_deleted = file_can_be_deleted.get()
-            Label(text="密码：").pack()
-            Entry(textvariable=pw_temp, show="*").pack()
-            Button(root, text="确定", command=root.destroy).pack()
-            mainloop()
-            if var1.get() == 1 and var2.get() == 1:
-                mode = 'upload_download'
-            elif var1.get() == 1:
-                mode = 'upload'
-            elif var2.get() == 1:
-                mode = 'download'
-            else:
-                mode = 'upload_download'
+    else:
+        root = Tk()
+        root.title("请选择")
+        root.geometry("250x250")
+        root.resizable(0, 0)
+        if port is None:
+            Label(text="端口：").pack()
+            p = Entry()
+            p.pack()
+            p.insert(0, "80")
+            port = int(p.get())
+        if threads is None:
+            Label(text="线程数：").pack()
+            t = Entry()
+            t.pack()
+            t.insert(0, "6")
+            threads = int(t.get())
+        var1 = IntVar()
+        var2 = IntVar()
+        pw_temp = StringVar()
+        Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
+        Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
+        if not file_can_be_deleted:
+            file_can_be_deleted = StringVar()
+            Checkbutton(root,
+                        text="允许他人删除“共享的文件”文件夹中的文件",
+                        variable=file_can_be_deleted, 
+                        onvalue=True, offvalue=False).pack()
+            file_can_be_deleted = file_can_be_deleted.get()
+        Label(text="密码：").pack()
+        Entry(textvariable=pw_temp, show="*").pack()
+        Button(root, text="确定", command=root.destroy).pack()
+        mainloop()
+        if var1.get() == 1 and var2.get() == 1:
+            mode = 'upload_download'
+        elif var1.get() == 1:
+            mode = 'upload'
+        elif var2.get() == 1:
+            mode = 'download'
+        else:
+            mode = 'upload_download'
     if port is None or port <= 0 or port >= 65535:
         port = 80
     if threads is None or threads <= 0:

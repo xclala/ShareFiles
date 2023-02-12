@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, abort, send_file, flash, url_for, redirect
+from flask import Flask, render_template, request, session, abort, send_from_directory, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from waitress import serve
 from os import path, urandom, scandir, remove, rename
@@ -125,11 +125,15 @@ def filelist():
         if fl.is_file():
             try:
                 if secure_filename(fl.name):
-                    rename(fl.name, secure_filename(fl.name))
+                    rename(path.join("共享的文件", fl.name),
+                           path.join("共享的文件", secure_filename(fl.name)))
                 else:
                     raise FileExistsError
             except FileExistsError:
-                rename(fl.name, uuid4().hex + path.splitext(fl.name)[1])
+                rename(
+                    path.join("共享的文件", fl.name),
+                    path.join("共享的文件",
+                              uuid4().hex + path.splitext(fl.name)[1]))
             filelist.append(secure_filename(fl.name))
     return filelist
 
@@ -139,17 +143,15 @@ def filelist_view():
 
 
 def download_file(filename):
-    filepath = path.join("共享的文件/", secure_filename(filename))
-    if path.isfile(filepath):
-        return send_file(filepath)
-    abort(404)
+    return send_from_directory("共享的文件",
+                               secure_filename(filename),
+                               as_attachment=True)
 
 
 def delete_file(filename):
     if app.config['file_can_be_deleted']:
-        filepath = path.join("共享的文件/", secure_filename(filename))
-        if path.isfile(filepath):
-            remove(filepath)
+        if path.isfile(secure_filename(filename)):
+            remove(secure_filename(filename))
             flash("文件成功删除！")
         else:
             flash("文件不存在！")

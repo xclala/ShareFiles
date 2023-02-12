@@ -1,6 +1,6 @@
 # ShareFiles
 共享文件的源代码
-usage: app.py [-h] [-p PORT] [-t THREAD] [--upload] [--download] [--debug]
+usage: app.py [-h] [-p PORT] [-t THREAD] [--upload] [--download] [--debug] [--file_can_be_deleted]
 
 options:
   -h, --help            show this help message and exit
@@ -9,3 +9,4 @@ options:
   --upload
   --download
   --debug
+  --file_can_be_deleted

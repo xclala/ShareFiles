@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, session, abort, send_from_directory, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
-from os import path, urandom, scandir, remove, rename
+from secrets import token_urlsafe
+from pathlib import Path
 from uuid import uuid4
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = urandom(666)
+app.config['SECRET_KEY'] = token_urlsafe(64)
 CSRFProtect(app)
 
 
@@ -49,7 +50,7 @@ def secure_filename(filename):
     filename = normalize("NFKD", filename)
     filename = filename.encode("utf-8", "ignore").decode("utf-8")
 
-    for sep in path.sep, path.altsep:
+    for sep in os.path.sep, os.path.altsep:
         if sep:
             filename = filename.replace(sep, " ")
     filename = str(_filename_gbk_strip_re.sub("", "_".join(
@@ -105,8 +106,9 @@ def upload_view():
             if not secure_filename(f.filename):
                 flash("请先选择文件！")
                 return render_template("upload.html")
-            if path.exists("共享的文件/" + secure_filename(f.filename)):
-                f.save("共享的文件/" + uuid4().hex + path.splitext(f.filename)[1])
+            path = Path("共享的文件") / secure_filename(f.filename)
+            if path.exists():
+                f.save("共享的文件/" + uuid4().hex + path.suffix)
             else:
                 f.save("共享的文件/" + secure_filename(f.filename))
         flash("文件成功上传！")
@@ -124,10 +126,10 @@ def delete_session():
 
 def filelist():
     filelist = []
-    for fl in scandir("共享的文件"):
+    for fl in Path("共享的文件").iterdir:
         if fl.is_file():
-            secure_rename(fl.name)
-            filelist.append(secure_filename(fl.name))
+            secure_rename(fl)
+            filelist.append(secure_filename(str(fl)))
     return filelist
 
 
@@ -143,8 +145,8 @@ def download_file(filename):
 
 def delete_file(filename):
     if app.config['file_can_be_deleted']:
-        if path.isfile(secure_filename(filename)):
-            remove(secure_filename(filename))
+        if Path(secure_filename(filename)).isfile():
+            Path(secure_filename(filename)).unlink()
             flash("文件成功删除！")
         else:
             flash("文件不存在！")
@@ -156,10 +158,10 @@ def delete_file(filename):
 def newfile():
     if request.method == 'POST':
         if secure_filename(request.form['filename']):
-            filepath = path.join("共享的文件/",
-                                 secure_filename(request.form['filename']))
-            with open(filepath, 'w', encoding='utf-8') as file_object:
-                file_object.write(request.form['content'])
+            filepath = Path("共享的文件") / secure_filename(
+                request.form['filename'])
+            filepath.write_text(request.form['content'],
+                                encoding=encoding(filepath))
             flash("成功新建文件！")
             return redirect('/')
         flash("请输入正确的文件名！")
@@ -169,8 +171,8 @@ def newfile():
 def edit(filename):
     if app.config['mode'] == 'upload_download':
         filename = secure_filename(filename)
-        filepath = path.join("共享的文件/", filename)
-        if not path.isfile(filepath):
+        filepath = Path("共享的文件") / filename
+        if not filepath.is_file():
             abort(404)
         if is_binary_file(filepath):
             flash("此文件不可被编辑！")
@@ -183,13 +185,10 @@ def edit(filename):
                 return render_template('edit.html',
                                        filename=filename,
                                        file_content=file_content)
-            with open(path.join("共享的文件/", request.form['filename']),
-                      'w',
-                      encoding=encoding(filepath)) as file_obj:
-                file_obj.write(request.form['content'])
+            path = Path("共享的文件") / request.form['filename']
+            path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
-        with open(filepath, 'r', encoding=encoding(filepath)) as file_obj:
-            file_content = file_obj.read()
+        file_content = filepath.read_text(encoding(filepath))
         return render_template('edit.html',
                                filename=filename,
                                file_content=file_content)
@@ -199,8 +198,7 @@ def edit(filename):
 
 def encoding(filepath):
     from chardet import detect
-    with open(filepath, "rb") as file_obj:
-        data = file_obj.read()
+    data = filepath.read_bytes()
     encoding = detect(data)["encoding"]
     return encoding
 
@@ -227,16 +225,17 @@ def is_binary_file(filepath):
 
 
 def secure_rename(filename):
+    a = Path("共享的文件") / filename
     try:
-        if secure_filename(filename):
-            rename(path.join("共享的文件", filename),
-                   path.join("共享的文件", secure_filename(filename)))
+        if secure_filename(str(filename)):
+            a = Path("共享的文件") / filename
+            b = Path("共享的文件") / secure_filename(str(filename))
+            a.rename(b)
         else:
             raise FileExistsError
     except FileExistsError:
-        rename(path.join("共享的文件", filename),
-               path.join("共享的文件",
-                         uuid4().hex + path.splitext(filename)[1]))
+        c = Path("共享的文件") / uuid4().hex / a.suffix
+        a.rename(c)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])

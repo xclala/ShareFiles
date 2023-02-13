@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {%- block title -%}登录{%- endblock -%}
 {% block logic %}
-<form action="{{ url_for('login') }}" method="post" enctype="multipart/form-data" align="center">
+<form action="{{ url_for('login') }}" method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="password" name="passwd" placeholder="请输入密码" autofocus>
     <input type="submit" value="确定">

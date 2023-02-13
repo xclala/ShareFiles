@@ -51,8 +51,9 @@ try:
             file_can_be_deleted = StringVar()
             Checkbutton(root,
                         text="允许他人删除“共享的文件”文件夹中的文件",
-                        variable=file_can_be_deleted, 
-                        onvalue=True, offvalue=False).pack()
+                        variable=file_can_be_deleted,
+                        onvalue=True,
+                        offvalue=False).pack()
             file_can_be_deleted = file_can_be_deleted.get()
         Label(text="密码：").pack()
         Entry(textvariable=pw_temp, show="*").pack()

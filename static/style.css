@@ -42,7 +42,7 @@ input {
     color: orangered;
 }
 
-#filelist {
+#filelist, form {
     margin: 0 auto;
     text-align: center;
 }

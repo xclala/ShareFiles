@@ -28,3 +28,4 @@ waitress>=2.1.2
 Werkzeug>=2.2.2
 wsproto>=1.2.0
 WTForms>=3.0.1
+chardet>=5.1.0

@@ -126,17 +126,7 @@ def filelist():
     filelist = []
     for fl in scandir("共享的文件"):
         if fl.is_file():
-            try:
-                if secure_filename(fl.name):
-                    rename(path.join("共享的文件", fl.name),
-                           path.join("共享的文件", secure_filename(fl.name)))
-                else:
-                    raise FileExistsError
-            except FileExistsError:
-                rename(
-                    path.join("共享的文件", fl.name),
-                    path.join("共享的文件",
-                              uuid4().hex + path.splitext(fl.name)[1]))
+            secure_rename(fl.name)
             filelist.append(secure_filename(fl.name))
     return filelist
 
@@ -166,13 +156,87 @@ def delete_file(filename):
 def newfile():
     if request.method == 'POST':
         if secure_filename(request.form['filename']):
-            filepath = path.join("共享的文件/", secure_filename(request.form['filename']))
+            filepath = path.join("共享的文件/",
+                                 secure_filename(request.form['filename']))
             with open(filepath, 'w', encoding='utf-8') as file_object:
                 file_object.write(request.form['content'])
             flash("成功新建文件！")
             return redirect('/')
         flash("请输入正确的文件名！")
     return render_template('newfile.html')
+
+
+def edit(filename):
+    if app.config['mode'] == 'upload_download':
+        filename = secure_filename(filename)
+        filepath = path.join("共享的文件/", filename)
+        if not path.isfile(filepath):
+            abort(404)
+        if is_binary_file(filepath):
+            flash("此文件不可被编辑！")
+            return redirect('/')
+        if request.method == 'POST':
+            if secure_filename(request.form['filename']):
+                secure_rename(request.form['filename'])
+            else:
+                flash("请输入正确的文件名！")
+                return render_template('edit.html',
+                                       filename=filename,
+                                       file_content=file_content)
+            with open(path.join("共享的文件/", request.form['filename']),
+                      'w',
+                      encoding=encoding(filepath)) as file_obj:
+                file_obj.write(request.form['content'])
+            return redirect('/')
+        with open(filepath, 'r', encoding=encoding(filepath)) as file_obj:
+            file_content = file_obj.read()
+        return render_template('edit.html',
+                               filename=filename,
+                               file_content=file_content)
+    flash("此文件不可被编辑！")
+    return redirect('/')
+
+
+def encoding(filepath):
+    from chardet import detect
+    with open(filepath, "rb") as file_obj:
+        data = file_obj.read()
+    encoding = detect(data)["encoding"]
+    return encoding
+
+
+def is_binary_file(filepath):
+    import codecs
+    _TEXT_BOMS = (
+        codecs.BOM_UTF16_BE,
+        codecs.BOM_UTF16_LE,
+        codecs.BOM_UTF32_BE,
+        codecs.BOM_UTF32_LE,
+        codecs.BOM_UTF8,
+    )
+    with open(filepath, 'rb') as file:
+        initial_bytes = file.read(8192)
+        file.close()
+        for bom in _TEXT_BOMS:
+            if initial_bytes.startswith(bom):
+                continue
+            else:
+                if b'\0' in initial_bytes:
+                    return True
+    return False
+
+
+def secure_rename(filename):
+    try:
+        if secure_filename(filename):
+            rename(path.join("共享的文件", filename),
+                   path.join("共享的文件", secure_filename(filename)))
+        else:
+            raise FileExistsError
+    except FileExistsError:
+        rename(path.join("共享的文件", filename),
+               path.join("共享的文件",
+                         uuid4().hex + path.splitext(filename)[1]))
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
@@ -182,6 +246,9 @@ app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 def upload():
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule('/newfile', view_func=newfile, methods=['GET', 'POST'])
+    app.add_url_rule('/edit/<filename>',
+                     view_func=edit,
+                     methods=['GET', 'POST'])
     return app
 
 

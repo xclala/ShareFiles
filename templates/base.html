@@ -26,8 +26,14 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    {% block logic %}
-    {% endblock %}
+    <form id="form" method="post" enctype="multipart/form-data">
+        <script>
+            document.getElementById("form").action = window.location.href
+        </script>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% block logic %}
+        {% endblock %}
+    </form>
     <div id="filelist">
         {% for fl in filelist %}
         <a href="/filelist/{{ fl }}">{{ fl }}</a>

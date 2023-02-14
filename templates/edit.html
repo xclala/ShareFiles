@@ -1,15 +1,9 @@
 {% extends "base.html" %}
 {%- block title -%}编辑文件{%- endblock -%}
 {% block logic %}
-<form id="edit" method="post" enctype="multipart/form-data">
-    <script>
-        document.getElementById("edit").action = window.location.href
-    </script>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="text" name="filename" placeholder="文件名" autofocus value="{{ filename }}">
-    <p></p>
-    <textarea name="content" rows="30" cols="100">{{ file_content }}</textarea>
-    <p></p>
-    <input type="submit" value="确定">
-</form>
+<input type="text" name="filename" placeholder="文件名" autofocus value="{{ filename }}">
+<p></p>
+<textarea name="content" rows="30" cols="100">{{ file_content }}</textarea>
+<p></p>
+<input type="submit" value="确定">
 {% endblock %}

@@ -161,7 +161,7 @@ def newfile():
             filepath = Path("共享的文件") / secure_filename(
                 request.form['filename'])
             filepath.write_text(request.form['content'],
-                                encoding=encoding(filepath))
+                                encoding="utf-8")
             flash("成功新建文件！")
             return redirect('/')
         flash("请输入正确的文件名！")

@@ -199,8 +199,7 @@ def edit(filename):
 def encoding(filepath):
     from chardet import detect
     data = filepath.read_bytes()
-    encoding = detect(data)["encoding"]
-    return encoding
+    return detect(data)["encoding"]
 
 
 def is_binary_file(filepath):

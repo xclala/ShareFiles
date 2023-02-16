@@ -3,6 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 from secrets import token_urlsafe
 from pathlib import Path
 from uuid import uuid4
+from datetime import timedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = token_urlsafe(64)
@@ -80,22 +81,21 @@ def is_login():
 
 
 def login():
-    password = app.config['password']
-    if session.get("password") == password:
+    if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
             return redirect(url_for('filelist_view'))
         return redirect(url_for('upload_view'))
     if request.method == 'POST':
-        if session.get(
-                "password") == password or request.form['passwd'] == password:
-            if request.form['passwd'] == password:
-                session['password'] = request.form['passwd']
+        if request.form['passwd'] == app.config['password']:
+            if request.form['session-lifetime'] != 'default':
+                session.permanent = True
+                app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
+                    days=int(request.form['session-lifetime']))
+            session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
                 return redirect(url_for('filelist_view'))
-            else:
-                return redirect(url_for('upload_view'))
-        elif session.get(
-                "password") != password or request.form['passwd'] != password:
+            return redirect(url_for('upload_view'))
+        else:
             flash("密码错误！")
     return render_template('login.html')
 
@@ -160,8 +160,7 @@ def newfile():
         if secure_filename(request.form['filename']):
             filepath = Path("共享的文件") / secure_filename(
                 request.form['filename'])
-            filepath.write_text(request.form['content'],
-                                encoding="utf-8")
+            filepath.write_text(request.form['content'], encoding="utf-8")
             flash("成功新建文件！")
             return redirect('/')
         flash("请输入正确的文件名！")

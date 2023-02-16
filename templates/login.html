@@ -2,5 +2,11 @@
 {%- block title -%}登录{%- endblock -%}
 {% block logic %}
 <input type="password" name="passwd" placeholder="请输入密码" autofocus>
+<select name="session-lifetime">
+    <option value="default">在关闭浏览器时退出登录</option>
+    <option value="1">一天</option>
+    <option value="3">三天</option>
+    <option value="7">一周</option>
+</select>
 <input type="submit" value="确定">
 {% endblock %}

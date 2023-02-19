@@ -1,14 +1,12 @@
 from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, IntVar, Checkbutton
+from tkinter.filedialog import askdirectory
 from pathlib import Path
 from argparse import ArgumentParser
 from tkinter.messagebox import showinfo
 from views import upload, download
 from waitress import serve
 
-try:
-    Path("共享的文件").mkdir()
-except FileExistsError:
-    ...
+dir = ''
 parser = ArgumentParser()
 parser.add_argument('-p', '--port', type=int)
 parser.add_argument('-t', '--thread', type=int)
@@ -27,9 +25,21 @@ elif parser.parse_args().upload:
 elif parser.parse_args().download:
     mode = 'download'
 else:
+    def ask_dir():
+        global dir
+        path = askdirectory()
+        if path:
+            dir = Path(path)
+        else:
+            try:
+                Path("共享的文件").mkdir()
+            except FileExistsError:
+                ...
+            dir = Path("共享的文件")
+        showinfo("已选择文件夹", "已选择文件夹！")
     root = Tk()
     root.title("请选择")
-    root.geometry("250x250")
+    root.geometry("300x300")
     root.resizable(0, 0)
     if port is None:
         Label(text="端口：").pack()
@@ -58,6 +68,8 @@ else:
         file_can_be_deleted = file_can_be_deleted.get()
     Label(text="密码：").pack()
     Entry(textvariable=pw_temp, show="*").pack()
+    Label(text="文件夹：").pack()
+    Button(root, text="选择文件夹", command=ask_dir).pack()
     Button(root, text="确定", command=root.destroy).pack()
     mainloop()
     if var1.get() == 1 and var2.get() == 1:
@@ -75,28 +87,27 @@ if threads is None or threads <= 0:
 
 if mode == 'upload':
     if port == 80:
-        showinfo("", "在浏览器中输入您的ip地址即可允许他人更改“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改{dir}")
     else:
-        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改{dir}")
     app = upload()
-    app.config['mode'] = 'upload'
 elif mode == 'download':
     if port == 80:
-        showinfo("", "在浏览器中输入您的ip地址即可允许他人访问“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址即可允许他人访问{dir}")
     else:
-        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问{dir}")
     app = download()
-    app.config['mode'] = 'download'
     app.config['file_can_be_deleted'] = file_can_be_deleted
 else:
     if port == 80:
-        showinfo("", "在浏览器中输入您的ip地址即可允许他人更改和访问“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改和访问{dir}")
     else:
-        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问“共享的文件”文件夹")
+        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问{dir}")
     upload()
     app = download()
-    app.config['mode'] = 'upload_download'
     app.config['file_can_be_deleted'] = file_can_be_deleted
+app.config['dir'] = dir
+app.config['mode'] = mode
 app.config['password'] = pw_temp.get()
 if debug_mode:
     app.run(port=port, debug=True, use_debugger=True, use_reloader=False)

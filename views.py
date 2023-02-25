@@ -3,6 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 from secrets import token_urlsafe
 from uuid import uuid4
 from datetime import timedelta
+from pathlib import Path
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = token_urlsafe(64)
@@ -107,9 +108,9 @@ def upload_view():
                 return render_template("upload.html")
             path = app.config['dir'] / secure_filename(f.filename)
             if path.exists():
-                f.save("共享的文件/" + uuid4().hex + path.suffix)
+                f.save(str(app.config['dir']) + uuid4().hex + path.suffix)
             else:
-                f.save("共享的文件/" + secure_filename(f.filename))
+                f.save(str(app.config['dir']) + secure_filename(f.filename))
         flash("文件成功上传！")
     if app.config['mode'] == 'upload':
         return render_template('upload.html')
@@ -123,39 +124,49 @@ def delete_session():
     return redirect(url_for('login'))
 
 
-def filelist():
+def filelist(filepath=None):
     filelist = []
-    for fl in app.config['dir'].iterdir():
-        if fl.is_file():
-            secure_rename(fl)
-            filelist.append(secure_filename(str(fl)))
+    path = app.config['dir']
+    if filepath:
+        path = app.config['dir'] / filepath
+    for fl in path.iterdir():
+        secure_rename(fl)
+        filelist.append(secure_filename(str(fl)))
     return filelist
 
 
-def filelist_view():
-    return render_template("download.html", filelist=filelist())
+def filelist_view(filepath):
+    filepath = secure_filepath(filepath)
+    if Path(filepath).is_file():
+        return send_from_directory(str(app.config['dir']),
+                                filepath,
+                                as_attachment=True)
+    if Path(filepath).is_dir():
+        return render_template("download.html", filelist=filelist(filepath))
+    abort(404)
 
 
-def download_file(filename):
-    return send_from_directory(str(app.config['dir']),
-                               secure_filename(filename),
-                               as_attachment=True)
-
-
-def delete_file(filename):
+def delete_file(filepath):
+    from shutil import rmtree
     if app.config['file_can_be_deleted']:
-        p = app.config['dir'] / secure_filename(filename)
-        if p.isfile():
+        secure_rename(Path(filepath))
+        p = app.config['dir'] / secure_filepath(filepath)
+        if p.is_file():
             p.unlink()
             flash("文件成功删除！")
+        if p.is_dir():
+            rmtree(p)
+            flash("目录成功删除！")
         else:
+            print(p)
             flash("文件不存在！")
     else:
         flash("此文件不可被删除！")
-    return redirect(url_for('filelist_view'))
+    return redirect("/")
 
 
 def newfile():
+    #之后让它支持文件夹
     if request.method == 'POST':
         if secure_filename(request.form['filename']):
             filepath = app.config['dir'] / secure_filename(
@@ -168,6 +179,7 @@ def newfile():
 
 
 def edit(filename):
+    #之后让它支持文件夹
     if app.config['mode'] == 'upload_download':
         filename = secure_filename(filename)
         filepath = app.config['dir'] / filename
@@ -223,18 +235,22 @@ def is_binary_file(filepath):
 
 
 def secure_rename(filename):
-    a = app.config['dir'] / filename
     try:
         if secure_filename(str(filename)):
-            a = app.config['dir'] / filename
-            b = app.config['dir'] / secure_filename(str(filename))
-            a.rename(b)
+            b = app.config['dir'] / secure_filename(filename.name)
+            filename.rename(b)
         else:
             raise FileExistsError
     except FileExistsError:
-        c = app.config['dir'] / uuid4().hex / a.suffix
-        a.rename(c)
+        c = app.config['dir'] / uuid4().hex / filename.suffix
+        filename.rename(c)
 
+def secure_filepath(filepath):
+    list = []
+    for i in filepath.split("/"):
+        i = secure_filename(i)
+        list.append(i)
+    return "/".join(list)
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
@@ -250,13 +266,10 @@ def upload():
 
 
 def download():
-    app.add_url_rule('/filelist',
+    app.add_url_rule("/filelist/<path:filepath>",
                      view_func=filelist_view,
-                     methods=['GET', 'POST'])
-    app.add_url_rule("/filelist/<filename>",
-                     view_func=download_file,
                      methods=['GET'])
-    app.add_url_rule('/delete/<filename>',
+    app.add_url_rule('/delete/<path:filepath>',
                      view_func=delete_file,
                      methods=['GET'])
     return app

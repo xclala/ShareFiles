@@ -1,4 +1,4 @@
-from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, IntVar, Checkbutton
+from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, IntVar, BooleanVar, Checkbutton
 from tkinter.filedialog import askdirectory
 from pathlib import Path
 from argparse import ArgumentParser
@@ -59,13 +59,10 @@ else:
     Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
     Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
     if not file_can_be_deleted:
-        file_can_be_deleted = StringVar()
+        file_can_be_deleted = BooleanVar()
         Checkbutton(root,
                     text="允许他人删除“共享的文件”文件夹中的文件",
-                    variable=file_can_be_deleted,
-                    onvalue=True,
-                    offvalue=False).pack()
-        file_can_be_deleted = file_can_be_deleted.get()
+                    variable=file_can_be_deleted).pack()
     Label(text="密码：").pack()
     Entry(textvariable=pw_temp, show="*").pack()
     Label(text="文件夹：").pack()
@@ -106,6 +103,8 @@ else:
     upload()
     app = download()
     app.config['file_can_be_deleted'] = file_can_be_deleted
+if not dir:
+    dir = Path("共享的文件")
 app.config['dir'] = dir
 app.config['mode'] = mode
 app.config['password'] = pw_temp.get()

@@ -5,29 +5,33 @@ from argparse import ArgumentParser
 from tkinter.messagebox import showinfo
 from views import upload, download
 from waitress import serve
+from platform import python_version_tuple
 
-dir = ''
-parser = ArgumentParser()
+assert python_version_tuple()[0] == '3' and int(python_version_tuple()[1]) > 10, "python版本太低，无法运行"
+
+dir: Path = Path()
+parser: ArgumentParser = ArgumentParser()
 parser.add_argument('-p', '--port', type=int)
 parser.add_argument('-t', '--thread', type=int)
 parser.add_argument('--upload', action="store_true")
 parser.add_argument('--download', action="store_true")
 parser.add_argument('--debug', action="store_true")
 parser.add_argument('--file_can_be_deleted', action="store_true")
-file_can_be_deleted = parser.parse_args().file_can_be_deleted
-debug_mode = parser.parse_args().debug
-port = parser.parse_args().port
-threads = parser.parse_args().thread
+file_can_be_deleted: bool | BooleanVar = parser.parse_args().file_can_be_deleted
+debug_mode: bool = parser.parse_args().debug
+port: int = parser.parse_args().port
+threads: int = parser.parse_args().thread
 if parser.parse_args().upload and parser.parse_args().download:
-    mode = 'upload_download'
+    mode: str = 'upload_download'
 elif parser.parse_args().upload:
-    mode = 'upload'
+    mode: str = 'upload'
 elif parser.parse_args().download:
-    mode = 'download'
+    mode: str = 'download'
 else:
+
     def ask_dir():
         global dir
-        path = askdirectory()
+        path: str = askdirectory()
         if path:
             dir = Path(path)
         else:
@@ -37,25 +41,26 @@ else:
                 ...
             dir = Path("共享的文件")
         showinfo("已选择文件夹", "已选择文件夹！")
-    root = Tk()
+
+    root: Tk = Tk()
     root.title("请选择")
     root.geometry("300x300")
     root.resizable(0, 0)
     if port is None:
         Label(text="端口：").pack()
-        p = Entry()
+        p: Entry = Entry()
         p.pack()
         p.insert(0, "80")
         port = int(p.get())
     if threads is None:
         Label(text="线程数：").pack()
-        t = Entry()
+        t: Entry = Entry()
         t.pack()
         t.insert(0, "6")
         threads = int(t.get())
-    var1 = IntVar()
-    var2 = IntVar()
-    pw_temp = StringVar()
+    var1: IntVar = IntVar()
+    var2: IntVar = IntVar()
+    pw_temp: StringVar = StringVar()
     Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
     Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
     if not file_can_be_deleted:

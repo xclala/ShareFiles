@@ -4,13 +4,14 @@ from secrets import token_urlsafe
 from uuid import uuid4
 from datetime import timedelta
 from pathlib import Path
+from typing import NoReturn
 
-app = Flask(__name__)
+app: Flask = Flask(__name__)
 app.config['SECRET_KEY'] = token_urlsafe(64)
 CSRFProtect(app)
 
 
-def secure_filename(filename):
+def secure_filename(filename: str) -> str:
     r"""Pass it a filename and it will return a secure version of it.  This
     filename can then safely be stored on a regular file system and passed
     to :func:`os.path.join`.
@@ -35,7 +36,7 @@ def secure_filename(filename):
     from re import compile
     import os
     _filename_gbk_strip_re = compile(u"[^\u4e00-\u9fa5A-Za-z0-9_.-]")
-    _windows_device_files = (
+    _windows_device_files: tuple[str] = (
         "CON",
         "AUX",
         "COM1",
@@ -68,7 +69,7 @@ def secure_filename(filename):
 
 
 @app.before_request
-def is_login():
+def is_login() -> (redirect | None):
     if request.path == url_for('login'):
         return None
     if request.path == url_for('static', filename='style.css'):
@@ -80,7 +81,7 @@ def is_login():
     return redirect(url_for('login'))
 
 
-def login():
+def login() -> (redirect | render_template):
     if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
             return redirect(url_for('filelist_view'))
@@ -100,13 +101,13 @@ def login():
     return render_template('login.html')
 
 
-def upload_view():
+def upload_view() -> render_template:
     if request.method == 'POST':
         for f in request.files.getlist('file'):
             if not secure_filename(f.filename):
                 flash("请先选择文件！")
                 return render_template("upload.html")
-            path = app.config['dir'] / secure_filename(f.filename)
+            path: Path = app.config['dir'] / secure_filename(f.filename)
             if path.exists():
                 f.save(str(app.config['dir']) + uuid4().hex + path.suffix)
             else:
@@ -117,14 +118,14 @@ def upload_view():
     return render_template('upload.html', filelist=filelist(), title="共享文件")
 
 
-def delete_session():
+def delete_session() -> redirect:
     session.clear()
     session.pop("password", None)
     flash("成功退出登录！")
     return redirect(url_for('login'))
 
 
-def filelist(filepath=None):
+def filelist(filepath: str | Path = None) -> str:
     filelist = []
     path = app.config['dir']
     if filepath:
@@ -135,22 +136,22 @@ def filelist(filepath=None):
     return filelist
 
 
-def filelist_view(filepath):
+def filelist_view(filepath: str) -> (send_from_directory | render_template | NoReturn):
     filepath = secure_filepath(filepath)
     if Path(filepath).is_file():
         return send_from_directory(str(app.config['dir']),
-                                filepath,
-                                as_attachment=True)
+                                   filepath,
+                                   as_attachment=True)
     if Path(filepath).is_dir():
         return render_template("download.html", filelist=filelist(filepath))
     abort(404)
 
 
-def delete_file(filepath):
+def delete_file(filepath: str) -> redirect:
     from shutil import rmtree
     if app.config['file_can_be_deleted']:
         secure_rename(Path(filepath))
-        p = app.config['dir'] / secure_filepath(filepath)
+        p: Path = app.config['dir'] / secure_filepath(filepath)
         if p.is_file():
             p.unlink()
             flash("文件成功删除！")
@@ -165,11 +166,11 @@ def delete_file(filepath):
     return redirect("/")
 
 
-def newfile():
+def newfile() -> (redirect | render_template):
     #之后让它支持文件夹
     if request.method == 'POST':
         if secure_filename(request.form['filename']):
-            filepath = app.config['dir'] / secure_filename(
+            filepath: Path = app.config['dir'] / secure_filename(
                 request.form['filename'])
             filepath.write_text(request.form['content'], encoding="utf-8")
             flash("成功新建文件！")
@@ -178,28 +179,28 @@ def newfile():
     return render_template('newfile.html')
 
 
-def edit(filename):
+def edit(filename: str) -> (NoReturn | render_template | redirect):
     #之后让它支持文件夹
     if app.config['mode'] == 'upload_download':
         filename = secure_filename(filename)
-        filepath = app.config['dir'] / filename
+        filepath: Path = app.config['dir'] / filename
         if not filepath.is_file():
             abort(404)
         if is_binary_file(filepath):
             flash("此文件不可被编辑！")
             return redirect('/')
+        file_content: str = filepath.read_text(encoding(filepath))
         if request.method == 'POST':
             if secure_filename(request.form['filename']):
-                secure_rename(request.form['filename'])
+                secure_rename(app.config['dir'] / request.form['filename'])
             else:
                 flash("请输入正确的文件名！")
                 return render_template('edit.html',
                                        filename=filename,
                                        file_content=file_content)
-            path = app.config['dir'] / request.form['filename']
+            path: Path = app.config['dir'] / request.form['filename']
             path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
-        file_content = filepath.read_text(encoding(filepath))
         return render_template('edit.html',
                                filename=filename,
                                file_content=file_content)
@@ -207,15 +208,15 @@ def edit(filename):
     return redirect('/')
 
 
-def encoding(filepath):
+def encoding(filepath: Path) -> str:
     from chardet import detect
-    data = filepath.read_bytes()
+    data: bytes = filepath.read_bytes()
     return detect(data)["encoding"]
 
 
-def is_binary_file(filepath):
+def is_binary_file(filepath: str) -> bool:
     import codecs
-    _TEXT_BOMS = (
+    _TEXT_BOMS: tuple = (
         codecs.BOM_UTF16_BE,
         codecs.BOM_UTF16_LE,
         codecs.BOM_UTF32_BE,
@@ -223,7 +224,7 @@ def is_binary_file(filepath):
         codecs.BOM_UTF8,
     )
     with open(filepath, 'rb') as file:
-        initial_bytes = file.read(8192)
+        initial_bytes: bytes = file.read(8192)
         file.close()
         for bom in _TEXT_BOMS:
             if initial_bytes.startswith(bom):
@@ -234,29 +235,29 @@ def is_binary_file(filepath):
     return False
 
 
-def secure_rename(filename):
+def secure_rename(filepath: Path):
     try:
-        if secure_filename(str(filename)):
-            b = app.config['dir'] / secure_filename(filename.name)
-            filename.rename(b)
+        if secure_filepath(str(filepath)):
+            filepath.rename(secure_filepath(str(filepath)))
         else:
             raise FileExistsError
     except FileExistsError:
-        c = app.config['dir'] / uuid4().hex / filename.suffix
-        filename.rename(c)
+        filepath.rename(uuid4().hex + filepath.suffix)
 
-def secure_filepath(filepath):
-    list = []
+
+def secure_filepath(filepath: str) -> str:
+    list: dict[str] = []
     for i in filepath.split("/"):
-        i = secure_filename(i)
+        i: str = secure_filename(i)
         list.append(i)
     return "/".join(list)
+
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
-def upload():
+def upload() -> Flask:
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule('/newfile', view_func=newfile, methods=['GET', 'POST'])
     app.add_url_rule('/edit/<filename>',
@@ -265,7 +266,7 @@ def upload():
     return app
 
 
-def download():
+def download() -> Flask:
     app.add_url_rule("/filelist/<path:filepath>",
                      view_func=filelist_view,
                      methods=['GET'])

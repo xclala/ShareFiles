@@ -45,7 +45,7 @@ else:
     root: Tk = Tk()
     root.title("请选择")
     root.geometry("300x300")
-    root.resizable(0, 0)
+    root.resizable(False, False)
     if port is None:
         Label(text="端口：").pack()
         p: Entry = Entry()

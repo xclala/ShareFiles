@@ -4,14 +4,14 @@ from secrets import token_urlsafe
 from uuid import uuid4
 from datetime import timedelta
 from pathlib import Path
-from typing import NoReturn
+from typing import Any, Optional
 
 app: Flask = Flask(__name__)
 app.config['SECRET_KEY'] = token_urlsafe(64)
 CSRFProtect(app)
 
 
-def secure_filename(filename: str) -> str:
+def secure_filename(filename: str | None) -> (str | None):
     r"""Pass it a filename and it will return a secure version of it.  This
     filename can then safely be stored on a regular file system and passed
     to :func:`os.path.join`.
@@ -36,7 +36,7 @@ def secure_filename(filename: str) -> str:
     from re import compile
     import os
     _filename_gbk_strip_re = compile(u"[^\u4e00-\u9fa5A-Za-z0-9_.-]")
-    _windows_device_files: tuple[str] = (
+    _windows_device_files: tuple = (
         "CON",
         "AUX",
         "COM1",
@@ -69,7 +69,7 @@ def secure_filename(filename: str) -> str:
 
 
 @app.before_request
-def is_login() -> (redirect | None):
+def is_login() -> Any:
     if request.path == url_for('login'):
         return None
     if request.path == url_for('static', filename='style.css'):
@@ -81,10 +81,10 @@ def is_login() -> (redirect | None):
     return redirect(url_for('login'))
 
 
-def login() -> (redirect | render_template):
+def login() -> Any:
     if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
-            return redirect(url_for('filelist_view'))
+            return redirect(url_for('filelist_view', filepath=''))
         return redirect(url_for('upload_view'))
     if request.method == 'POST':
         if request.form['passwd'] == app.config['password']:
@@ -94,14 +94,14 @@ def login() -> (redirect | render_template):
                     days=int(request.form['session-lifetime']))
             session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
-                return redirect(url_for('filelist_view'))
+                return redirect(url_for('filelist_view', filepath=''))
             return redirect(url_for('upload_view'))
         else:
             flash("密码错误！")
     return render_template('login.html')
 
 
-def upload_view() -> render_template:
+def upload_view() -> Any:
     if request.method == 'POST':
         for f in request.files.getlist('file'):
             if not secure_filename(f.filename):
@@ -118,15 +118,15 @@ def upload_view() -> render_template:
     return render_template('upload.html', filelist=filelist(), title="共享文件")
 
 
-def delete_session() -> redirect:
+def delete_session() -> Any:
     session.clear()
     session.pop("password", None)
     flash("成功退出登录！")
     return redirect(url_for('login'))
 
 
-def filelist(filepath: str | Path = None) -> str:
-    filelist = []
+def filelist(filepath: str | Path | None = None) -> list:
+    filelist: list = []
     path = app.config['dir']
     if filepath:
         path = app.config['dir'] / filepath
@@ -136,18 +136,18 @@ def filelist(filepath: str | Path = None) -> str:
     return filelist
 
 
-def filelist_view(filepath: str) -> (send_from_directory | render_template | NoReturn):
-    filepath = secure_filepath(filepath)
-    if Path(filepath).is_file():
+def filelist_view(filepath: str) -> Any:
+    path: Path = app.config['dir'] / secure_filepath(filepath)
+    if path.is_file():
         return send_from_directory(str(app.config['dir']),
-                                   filepath,
+                                   str(path),
                                    as_attachment=True)
-    if Path(filepath).is_dir():
-        return render_template("download.html", filelist=filelist(filepath))
+    if path.is_dir():
+        return render_template("download.html", filelist=filelist(path))
     abort(404)
 
 
-def delete_file(filepath: str) -> redirect:
+def delete_file(filepath: str) -> Any:
     from shutil import rmtree
     if app.config['file_can_be_deleted']:
         secure_rename(Path(filepath))
@@ -166,7 +166,7 @@ def delete_file(filepath: str) -> redirect:
     return redirect("/")
 
 
-def newfile() -> (redirect | render_template):
+def newfile() -> Any:
     #之后让它支持文件夹
     if request.method == 'POST':
         if secure_filename(request.form['filename']):
@@ -179,14 +179,14 @@ def newfile() -> (redirect | render_template):
     return render_template('newfile.html')
 
 
-def edit(filename: str) -> (NoReturn | render_template | redirect):
+def edit(filename: str) -> Any:
     #之后让它支持文件夹
     if app.config['mode'] == 'upload_download':
         filename = secure_filename(filename)
         filepath: Path = app.config['dir'] / filename
         if not filepath.is_file():
             abort(404)
-        if is_binary_file(filepath):
+        if is_binary_file(str(filepath)):
             flash("此文件不可被编辑！")
             return redirect('/')
         file_content: str = filepath.read_text(encoding(filepath))
@@ -208,7 +208,7 @@ def edit(filename: str) -> (NoReturn | render_template | redirect):
     return redirect('/')
 
 
-def encoding(filepath: Path) -> str:
+def encoding(filepath: Path) -> Optional[str]:
     from chardet import detect
     data: bytes = filepath.read_bytes()
     return detect(data)["encoding"]
@@ -246,11 +246,11 @@ def secure_rename(filepath: Path):
 
 
 def secure_filepath(filepath: str) -> str:
-    list: dict[str] = []
+    list1: list = []
     for i in filepath.split("/"):
-        i: str = secure_filename(i)
-        list.append(i)
-    return "/".join(list)
+        i = secure_filename(i)
+        list1.append(i)
+    return "/".join(list1)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])

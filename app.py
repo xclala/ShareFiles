@@ -108,7 +108,7 @@ else:
     upload()
     app = download()
     app.config['file_can_be_deleted'] = file_can_be_deleted
-if not dir:
+if dir == Path():
     dir = Path("共享的文件")
 app.config['dir'] = dir
 app.config['mode'] = mode

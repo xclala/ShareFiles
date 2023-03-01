@@ -35,6 +35,7 @@
         {% endblock %}
     </form>
     <div id="filelist">
+        <a href="..">..<br></a>
         {% for fl in filelist %}
         <a href="/filelist/{{ fl }}">{{ fl }}</a>
         <a href="/edit/{{ fl }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;编辑</a>

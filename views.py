@@ -84,7 +84,7 @@ def is_login() -> Any:
 def login() -> Any:
     if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
-            return redirect(url_for('filelist_view', filepath=''))
+            return redirect(url_for('filelist_root'))
         return redirect(url_for('upload_view'))
     if request.method == 'POST':
         if request.form['passwd'] == app.config['password']:
@@ -94,7 +94,7 @@ def login() -> Any:
                     days=int(request.form['session-lifetime']))
             session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
-                return redirect(url_for('filelist_view', filepath=''))
+                return redirect(url_for('filelist_root'))
             return redirect(url_for('upload_view'))
         else:
             flash("密码错误！")
@@ -115,7 +115,7 @@ def upload_view() -> Any:
         flash("文件成功上传！")
     if app.config['mode'] == 'upload':
         return render_template('upload.html')
-    return render_template('upload.html', filelist=filelist(), title="共享文件")
+    return render_template('upload.html', filelist=filelist(app.config['dir']), title="共享文件")
 
 
 def delete_session() -> Any:
@@ -125,19 +125,21 @@ def delete_session() -> Any:
     return redirect(url_for('login'))
 
 
-def filelist(filepath: str | Path | None = None) -> list:
+def filelist(filepath: Path) -> list:
     filelist: list = []
-    path = app.config['dir']
-    if filepath:
-        path = app.config['dir'] / filepath
-    for fl in path.iterdir():
-        secure_rename(fl)
-        filelist.append(secure_filename(str(fl)))
+    for fl in filepath.iterdir():
+        secure_rename(Path(fl))
+        filelist.append(secure_filename(fl.name))
     return filelist
 
 
+def filelist_root() -> Any:
+    return render_template("download.html", filelist=filelist(app.config['dir']))
+
+
+
 def filelist_view(filepath: str) -> Any:
-    path: Path = app.config['dir'] / secure_filepath(filepath)
+    path: Path = app.config['dir'] / filepath.replace("..", "")
     if path.is_file():
         return send_from_directory(str(app.config['dir']),
                                    str(path),
@@ -151,7 +153,7 @@ def delete_file(filepath: str) -> Any:
     from shutil import rmtree
     if app.config['file_can_be_deleted']:
         secure_rename(Path(filepath))
-        p: Path = app.config['dir'] / secure_filepath(filepath)
+        p: Path = app.config['dir'] / filepath.replace("..", "")
         if p.is_file():
             p.unlink()
             flash("文件成功删除！")
@@ -159,7 +161,6 @@ def delete_file(filepath: str) -> Any:
             rmtree(p)
             flash("目录成功删除！")
         else:
-            print(p)
             flash("文件不存在！")
     else:
         flash("此文件不可被删除！")
@@ -237,20 +238,13 @@ def is_binary_file(filepath: str) -> bool:
 
 def secure_rename(filepath: Path):
     try:
-        if secure_filepath(str(filepath)):
-            filepath.rename(secure_filepath(str(filepath)))
-        else:
-            raise FileExistsError
+        if filepath.is_file():
+            if secure_filename(filepath.name):
+                filepath.rename(secure_filename(filepath.name))
+            else:
+                raise FileExistsError
     except FileExistsError:
         filepath.rename(uuid4().hex + filepath.suffix)
-
-
-def secure_filepath(filepath: str) -> str:
-    list1: list = []
-    for i in filepath.split("/"):
-        i = secure_filename(i)
-        list1.append(i)
-    return "/".join(list1)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
@@ -267,6 +261,9 @@ def upload() -> Flask:
 
 
 def download() -> Flask:
+    app.add_url_rule("/filelist/",
+                     view_func=filelist_root,
+                     methods=['GET'])
     app.add_url_rule("/filelist/<path:filepath>",
                      view_func=filelist_view,
                      methods=['GET'])

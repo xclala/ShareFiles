@@ -11,13 +11,9 @@ app.config['SECRET_KEY'] = token_urlsafe(64)
 CSRFProtect(app)
 
 
-def secure_filename(filename: str | None) -> (str | None):
-    r"""Pass it a filename and it will return a secure version of it.  This
-    filename can then safely be stored on a regular file system and passed
-    to :func:`os.path.join`.
-
-    On windows systems the function also makes sure that the file is not
-    named after one of the special device files.
+def secure_filename(filename: str | Path | None) -> str:
+    r"""传入文件名，它会返回其安全版本。
+        此文件名可以用于指定文件系统的路径和用于路径拼接。
 
     >>> secure_filename("My cool movie.mov")
     'My_cool_movie.mov'
@@ -26,11 +22,9 @@ def secure_filename(filename: str | None) -> (str | None):
     >>> secure_filename('i contain cool \xfcml\xe4uts.txt')
     'i_contain_cool_umlauts.txt'
 
-    The function might return an empty filename.  It's your responsibility
-    to ensure that the filename is unique and that you abort or
-    generate a random filename if the function returned an empty one.
+    如果文件名整个都有问题，那么会返回随机文件名
 
-    :param filename: the filename to secure
+    :参数 filename: 需要被安全处理的字符串或pathlib对象
     """
     from unicodedata import normalize
     from re import compile
@@ -49,6 +43,7 @@ def secure_filename(filename: str | None) -> (str | None):
         "PRN",
         "NUL",
     )
+    filename = str(filename)
     filename = normalize("NFKD", filename)
     filename = filename.encode("utf-8", "ignore").decode("utf-8")
 
@@ -65,7 +60,10 @@ def secure_filename(filename: str | None) -> (str | None):
             and filename.split(".")[0].upper() in _windows_device_files):
         filename = f"_{filename}"
 
-    return filename
+    if filename:
+        return filename
+    else:
+        return uuid4().hex
 
 
 @app.before_request
@@ -115,7 +113,9 @@ def upload_view() -> Any:
         flash("文件成功上传！")
     if app.config['mode'] == 'upload':
         return render_template('upload.html')
-    return render_template('upload.html', filelist=filelist(app.config['dir']), title="共享文件")
+    for fl in app.config['dir'].iterdir():
+        secure_rename(Path(fl))
+    return render_template('upload.html', filelist=app.config['dir'].iterdir(), title="共享文件")
 
 
 def delete_session() -> Any:
@@ -125,16 +125,10 @@ def delete_session() -> Any:
     return redirect(url_for('login'))
 
 
-def filelist(filepath: Path) -> list:
-    filelist: list = []
-    for fl in filepath.iterdir():
-        secure_rename(Path(fl))
-        filelist.append(secure_filename(fl.name))
-    return filelist
-
-
 def filelist_root() -> Any:
-    return render_template("download.html", filelist=filelist(app.config['dir']))
+    for fl in app.config['dir'].iterdir():
+        secure_rename(Path(fl))
+    return render_template("download.html", filelist=app.config['dir'].iterdir())
 
 
 
@@ -145,7 +139,9 @@ def filelist_view(filepath: str) -> Any:
                                    str(path),
                                    as_attachment=True)
     if path.is_dir():
-        return render_template("download.html", filelist=filelist(path))
+        for fl in path.iterdir():
+            secure_rename(Path(fl))
+        return render_template("download.html", filelist=path.iterdir())
     abort(404)
 
 
@@ -239,10 +235,7 @@ def is_binary_file(filepath: str) -> bool:
 def secure_rename(filepath: Path):
     try:
         if filepath.is_file():
-            if secure_filename(filepath.name):
-                filepath.rename(secure_filename(filepath.name))
-            else:
-                raise FileExistsError
+            filepath.rename(secure_filename(filepath.name))
     except FileExistsError:
         filepath.rename(uuid4().hex + filepath.suffix)
 

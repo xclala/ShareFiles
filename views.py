@@ -135,8 +135,8 @@ def filelist_root() -> Any:
 def filelist_view(filepath: str) -> Any:
     path: Path = app.config['dir'] / filepath.replace("..", "")
     if path.is_file():
-        return send_from_directory(str(app.config['dir']),
-                                   str(path),
+        return send_from_directory(app.config['dir'],
+                                   path,
                                    as_attachment=True)
     if path.is_dir():
         for fl in path.iterdir():

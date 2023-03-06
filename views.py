@@ -212,6 +212,7 @@ def encoding(filepath: Path) -> Optional[str]:
 
 
 def is_binary_file(filepath: str | Path) -> bool:
+    filepath = str(filepath)
     import codecs
     _TEXT_BOMS: tuple = (
         codecs.BOM_UTF16_BE,

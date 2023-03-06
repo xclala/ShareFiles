@@ -183,7 +183,7 @@ def edit(filename: str) -> Any:
         filepath: Path = app.config['dir'] / filename
         if not filepath.is_file():
             abort(404)
-        if is_binary_file(str(filepath)):
+        if is_binary_file(filepath):
             flash("此文件不可被编辑！")
             return redirect('/')
         file_content: str = filepath.read_text(encoding(filepath))

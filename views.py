@@ -82,7 +82,7 @@ def is_login() -> Any:
 def login() -> Any:
     if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
-            return redirect(url_for('filelist_root'))
+            return redirect(url_for('filelist', filepath=''))
         return redirect(url_for('upload_view'))
     if request.method == 'POST':
         if request.form['passwd'] == app.config['password']:
@@ -92,7 +92,7 @@ def login() -> Any:
                     days=int(request.form['session-lifetime']))
             session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
-                return redirect(url_for('filelist_root'))
+                return redirect(url_for('filelist', filepath=''))
             return redirect(url_for('upload_view'))
         else:
             flash("密码错误！")
@@ -102,7 +102,7 @@ def login() -> Any:
 def upload_view() -> Any:
     if request.method == 'POST':
         for f in request.files.getlist('file'):
-            if not secure_filename(f.filename):
+            if not f.filename:
                 flash("请先选择文件！")
                 return render_template("upload.html")
             path: Path = app.config['dir'] / secure_filename(f.filename)
@@ -125,14 +125,7 @@ def delete_session() -> Any:
     return redirect(url_for('login'))
 
 
-def filelist_root() -> Any:
-    for fl in app.config['dir'].iterdir():
-        secure_rename(Path(fl))
-    return render_template("download.html", filelist=app.config['dir'].iterdir())
-
-
-
-def filelist_view(filepath: str) -> Any:
+def filelist(filepath: str) -> Any:
     path: Path = app.config['dir'] / filepath.replace("..", "")
     if path.is_file():
         return send_from_directory(app.config['dir'],
@@ -146,9 +139,9 @@ def filelist_view(filepath: str) -> Any:
 
 
 def delete_file(filepath: str) -> Any:
+    #之后实现回收站
     from shutil import rmtree
     if app.config['file_can_be_deleted']:
-        secure_rename(Path(filepath))
         p: Path = app.config['dir'] / filepath.replace("..", "")
         if p.is_file():
             p.unlink()
@@ -159,7 +152,7 @@ def delete_file(filepath: str) -> Any:
         else:
             flash("文件不存在！")
     else:
-        flash("此文件不可被删除！")
+        flash("你没有删除文件的权限！")
     return redirect("/")
 
 
@@ -256,10 +249,10 @@ def upload() -> Flask:
 
 def download() -> Flask:
     app.add_url_rule("/filelist/",
-                     view_func=filelist_root,
+                     view_func=lambda: filelist(''),
                      methods=['GET'])
     app.add_url_rule("/filelist/<path:filepath>",
-                     view_func=filelist_view,
+                     view_func=filelist,
                      methods=['GET'])
     app.add_url_rule('/delete/<path:filepath>',
                      view_func=delete_file,

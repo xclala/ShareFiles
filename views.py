@@ -107,15 +107,16 @@ def upload_view():
                 return render_template("upload.html")
             path: Path = app.config['dir'] / secure_filename(f.filename)
             if path.exists():
-                f.save(str(app.config['dir']) + uuid4().hex + path.suffix)
+                f.save(app.config['dir'] / uuid4().hex + path.suffix)
             else:
-                f.save(str(app.config['dir']) + secure_filename(f.filename))
+                f.save(path)
         flash("文件成功上传！")
     if app.config['mode'] == 'upload':
         return render_template('upload.html')
-    for fl in app.config['dir'].iterdir():
-        secure_rename(Path(fl))
-    return render_template('upload.html', filelist=app.config['dir'].iterdir(), title="共享文件")
+    for filename in app.config['dir'].iterdir():
+        secure_rename(Path(filename))
+    fl = (i.relative_to(app.config['dir']) for i in path.iterdir())
+    return render_template('upload.html', filelist=fl, title="共享文件")
 
 
 def delete_session():
@@ -132,9 +133,10 @@ def filelist(filepath: str):
                                    path,
                                    as_attachment=True)
     if path.is_dir():
-        for fl in path.iterdir():
-            secure_rename(Path(fl))
-        return render_template("download.html", filelist=path.iterdir())
+        for filename in path.iterdir():
+            secure_rename(Path(filename))
+        fl = (i.relative_to(path) for i in path.iterdir())
+        return render_template("download.html", filelist=fl)
     abort(404)
 
 
@@ -146,9 +148,11 @@ def delete_file(filepath: str):
         if p.is_file():
             p.unlink()
             flash("文件成功删除！")
+            return redirect("/")
         if p.is_dir():
             rmtree(p)
             flash("目录成功删除！")
+            return redirect("/")
         else:
             flash("文件不存在！")
     else:
@@ -229,7 +233,7 @@ def is_binary_file(filepath: str | Path) -> bool:
 def secure_rename(filepath: Path):
     try:
         if filepath.is_file():
-            filepath.rename(secure_filename(filepath.name))
+            filepath.rename(filepath.parent / secure_filename(filepath.name))
     except FileExistsError:
         filepath.rename(uuid4().hex + filepath.suffix)
 

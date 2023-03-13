@@ -30,7 +30,7 @@ def secure_filename(filename: str | Path | None) -> str:
     from re import compile
     import os
     _filename_gbk_strip_re = compile(u"[^\u4e00-\u9fa5A-Za-z0-9_.-]")
-    _windows_device_files: tuple = (
+    _windows_device_files: tuple[str, ...] = (
         "CON",
         "AUX",
         "COM1",

@@ -148,11 +148,9 @@ def delete_file(filepath: str):
         if p.is_file():
             p.unlink()
             flash("文件成功删除！")
-            return redirect("/")
-        if p.is_dir():
+        elif p.is_dir():
             rmtree(p)
             flash("目录成功删除！")
-            return redirect("/")
         else:
             flash("文件不存在！")
     else:

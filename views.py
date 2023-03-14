@@ -136,7 +136,8 @@ def filelist(filepath: str):
         for filename in path.iterdir():
             secure_rename(Path(filename))
         fl = (i.relative_to(path) for i in path.iterdir())
-        return render_template("download.html", filelist=fl)
+        return render_template("download.html", filelist=fl, 
+        filepath=filepath.replace("..", ""))
     abort(404)
 
 

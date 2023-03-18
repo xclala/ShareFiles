@@ -100,23 +100,27 @@ def login():
 
 
 def upload_view():
-    if request.method == 'POST':
-        for f in request.files.getlist('file'):
-            if not f.filename:
-                flash("请先选择文件！")
-                return render_template("upload.html")
-            path: Path = app.config['dir'] / secure_filename(f.filename)
-            if path.exists():
-                f.save(app.config['dir'] / uuid4().hex + path.suffix)
-            else:
-                f.save(path)
-        flash("文件成功上传！")
-    if app.config['mode'] == 'upload':
-        return render_template('upload.html')
-    for filename in app.config['dir'].iterdir():
-        secure_rename(Path(filename))
-    fl = (i.relative_to(app.config['dir']) for i in path.iterdir())
-    return render_template('upload.html', filelist=fl, title="共享文件")
+    try:
+        if request.method == 'POST':
+            for f in request.files.getlist('file'):
+                if not f.filename:
+                    flash("请先选择文件！")
+                    return render_template("upload.html")
+                path: Path = app.config['dir'] / secure_filename(f.filename)
+                if path.exists():
+                    f.save(app.config['dir'] / uuid4().hex + path.suffix)
+                else:
+                    f.save(path)
+            flash("文件成功上传！")
+        if app.config['mode'] == 'upload':
+            return render_template('upload.html')
+        for filename in app.config['dir'].iterdir():
+            secure_rename(Path(filename))
+        fl = (i.relative_to(app.config['dir']) for i in app.config['dir'].iterdir())
+        return render_template('upload.html', filelist=fl, title="共享文件")
+    except PermissionError:
+        flash("权限不足！")
+        return render_template("upload.html")
 
 
 def delete_session():
@@ -127,33 +131,39 @@ def delete_session():
 
 
 def filelist(filepath: str):
-    path: Path = app.config['dir'] / filepath.replace("..", "")
-    if path.is_file():
-        return send_from_directory(app.config['dir'],
-                                   path,
-                                   as_attachment=True)
-    if path.is_dir():
-        for filename in path.iterdir():
-            secure_rename(Path(filename))
-        fl = (i.relative_to(path) for i in path.iterdir())
-        return render_template("download.html", filelist=fl, 
-        filepath=filepath.replace("..", ""))
-    abort(404)
+    try:
+        path: Path = app.config['dir'] / filepath.replace("..", "")
+        if path.is_file():
+            return send_from_directory(app.config['dir'],
+                                    path,
+                                    as_attachment=True)
+        if path.is_dir():
+            for filename in path.iterdir():
+                secure_rename(Path(filename))
+            fl = (i.relative_to(path) for i in path.iterdir())
+            return render_template("download.html", filelist=fl, 
+            filepath=filepath.replace("..", ""))
+        abort(404)
+    except PermissionError:
+        abort(403)
 
 
 def delete_file(filepath: str):
     #之后实现回收站
     from shutil import rmtree
     if app.config['file_can_be_deleted']:
-        p: Path = app.config['dir'] / filepath.replace("..", "")
-        if p.is_file():
-            p.unlink()
-            flash("文件成功删除！")
-        elif p.is_dir():
-            rmtree(p)
-            flash("目录成功删除！")
-        else:
-            flash("文件不存在！")
+        try:
+            p: Path = app.config['dir'] / filepath.replace("..", "")
+            if p.is_file():
+                p.unlink()
+                flash("文件成功删除！")
+            elif p.is_dir():
+                rmtree(p)
+                flash("目录成功删除！")
+            else:
+                flash("文件不存在！")
+        except PermissionError:
+            flash("你没有删除文件的权限！")
     else:
         flash("你没有删除文件的权限！")
     return redirect("/")
@@ -165,7 +175,10 @@ def newfile():
         if secure_filename(request.form['filename']):
             filepath: Path = app.config['dir'] / secure_filename(
                 request.form['filename'])
-            filepath.write_text(request.form['content'], encoding="utf-8")
+            try:
+                filepath.write_text(request.form['content'], encoding="utf-8")
+            except PermissionError:
+                flash("权限不足！")
             flash("成功新建文件！")
             return redirect('/')
         flash("请输入正确的文件名！")
@@ -174,14 +187,15 @@ def newfile():
 
 def edit(filename: str):
     #之后让它支持文件夹
-    if app.config['mode'] == 'upload_download':
-        filename = secure_filename(filename)
-        filepath: Path = app.config['dir'] / filename
+    if app.config['mode'] != 'upload':
+        raise PermissionError
+    filename = secure_filename(filename)
+    filepath: Path = app.config['dir'] / filename
+    try:
         if not filepath.is_file():
             abort(404)
         if is_binary_file(filepath):
-            flash("此文件不可被编辑！")
-            return redirect('/')
+            raise PermissionError
         file_content: str = filepath.read_text(encoding(filepath))
         if request.method == 'POST':
             if secure_filename(request.form['filename']):
@@ -189,16 +203,17 @@ def edit(filename: str):
             else:
                 flash("请输入正确的文件名！")
                 return render_template('edit.html',
-                                       filename=filename,
-                                       file_content=file_content)
+                                    filename=filename,
+                                    file_content=file_content)
             path: Path = app.config['dir'] / request.form['filename']
             path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
         return render_template('edit.html',
-                               filename=filename,
-                               file_content=file_content)
-    flash("此文件不可被编辑！")
-    return redirect('/')
+                            filename=filename,
+                            file_content=file_content)
+    except PermissionError:
+        flash("此文件不可被编辑！")
+        return redirect('/')
 
 
 def encoding(filepath: Path) -> Optional[str]:

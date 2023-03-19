@@ -7,7 +7,8 @@ from views import upload, download
 from waitress import serve
 from platform import python_version_tuple
 
-assert python_version_tuple()[0] == '3' and int(python_version_tuple()[1]) > 10, "python版本太低，无法运行"
+assert python_version_tuple()[0] == '3' and int(
+    python_version_tuple()[1]) > 10, "python版本太低，无法运行"
 
 dir: Path = Path()
 parser: ArgumentParser = ArgumentParser()
@@ -17,7 +18,8 @@ parser.add_argument('--upload', action="store_true")
 parser.add_argument('--download', action="store_true")
 parser.add_argument('--debug', action="store_true")
 parser.add_argument('--file_can_be_deleted', action="store_true")
-file_can_be_deleted: bool | BooleanVar = parser.parse_args().file_can_be_deleted
+file_can_be_deleted: bool | BooleanVar = parser.parse_args(
+).file_can_be_deleted
 debug_mode: bool = parser.parse_args().debug
 port: int = parser.parse_args().port
 threads: int = parser.parse_args().thread
@@ -99,7 +101,7 @@ elif mode == 'download':
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问{dir}")
     app = download()
-    app.config['file_can_be_deleted'] = file_can_be_deleted
+    app.config['file_can_be_deleted'] = file_can_be_deleted.get()
 else:
     if port == 80:
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改和访问{dir}")
@@ -107,7 +109,7 @@ else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问{dir}")
     upload()
     app = download()
-    app.config['file_can_be_deleted'] = file_can_be_deleted
+    app.config['file_can_be_deleted'] = file_can_be_deleted.get()
 if dir == Path():
     dir = Path("共享的文件")
 app.config['dir'] = dir

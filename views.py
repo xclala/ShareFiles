@@ -116,7 +116,8 @@ def upload_view():
             return render_template('upload.html')
         for filename in app.config['dir'].iterdir():
             secure_rename(Path(filename))
-        fl = (i.relative_to(app.config['dir']) for i in app.config['dir'].iterdir())
+        fl = (i.relative_to(app.config['dir'])
+              for i in app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl, title="共享文件")
     except PermissionError:
         flash("权限不足！")
@@ -135,14 +136,15 @@ def filelist(filepath: str):
         path: Path = app.config['dir'] / filepath.replace("..", "")
         if path.is_file():
             return send_from_directory(app.config['dir'],
-                                    path,
-                                    as_attachment=True)
+                                       path,
+                                       as_attachment=True)
         if path.is_dir():
             for filename in path.iterdir():
                 secure_rename(Path(filename))
             fl = (i.relative_to(path) for i in path.iterdir())
-            return render_template("download.html", filelist=fl, 
-            filepath=filepath.replace("..", ""))
+            return render_template("download.html",
+                                   filelist=fl,
+                                   filepath=filepath.replace("..", ""))
         abort(404)
     except PermissionError:
         abort(403)
@@ -185,32 +187,34 @@ def newfile():
     return render_template('newfile.html')
 
 
-def edit(filename: str):
-    #之后让它支持文件夹
-    if app.config['mode'] != 'upload':
-        raise PermissionError
-    filename = secure_filename(filename)
-    filepath: Path = app.config['dir'] / filename
+def edit(path: str):
     try:
+        if app.config['mode'] == 'upload':
+            raise PermissionError
+        filepath: Path = app.config['dir'] / path.replace('..', '')
         if not filepath.is_file():
             abort(404)
         if is_binary_file(filepath):
             raise PermissionError
         file_content: str = filepath.read_text(encoding(filepath))
         if request.method == 'POST':
-            if secure_filename(request.form['filename']):
-                secure_rename(app.config['dir'] / request.form['filename'])
+            if secure_filename(Path(request.form['filepath']).name):
+                filepath.rename(app.config['dir'] /
+                                (request.form['filepath']).replace("..", ""))
+                filepath = app.config['dir'] / (
+                    request.form['filepath']).replace("..", "")
             else:
-                flash("请输入正确的文件名！")
+                flash("请输入正确的路径！")
                 return render_template('edit.html',
-                                    filename=filename,
-                                    file_content=file_content)
-            path: Path = app.config['dir'] / request.form['filename']
+                                       filepath=filepath,
+                                       file_content=file_content)
+            path: Path = app.config['dir'] / request.form['filepath'].replace(
+                "..", "")
             path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
         return render_template('edit.html',
-                            filename=filename,
-                            file_content=file_content)
+                               filepath=path,
+                               file_content=file_content)
     except PermissionError:
         flash("此文件不可被编辑！")
         return redirect('/')
@@ -259,7 +263,7 @@ app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 def upload() -> Flask:
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
     app.add_url_rule('/newfile', view_func=newfile, methods=['GET', 'POST'])
-    app.add_url_rule('/edit/<filename>',
+    app.add_url_rule('/edit/<path:path>',
                      view_func=edit,
                      methods=['GET', 'POST'])
     return app

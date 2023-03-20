@@ -171,20 +171,18 @@ def delete_file(filepath: str):
     return redirect("/")
 
 
-def newfile():
-    #之后让它支持文件夹
-    if request.method == 'POST':
-        if secure_filename(request.form['filename']):
-            filepath: Path = app.config['dir'] / secure_filename(
-                request.form['filename'])
-            try:
-                filepath.write_text(request.form['content'], encoding="utf-8")
-            except PermissionError:
-                flash("权限不足！")
-            flash("成功新建文件！")
-            return redirect('/')
-        flash("请输入正确的文件名！")
-    return render_template('newfile.html')
+def newfile(path: str):
+    filepath: Path = app.config['dir'] / (request.form['filepath']).replace(
+        "..", "")
+    try:
+        filepath.touch(exist_ok=False)
+    except PermissionError:
+        flash("权限不足！")
+        return redirect('/')
+    except FileExistsError:
+        return redirect(url_for('edit', path=path))
+    else:
+        return redirect(url_for('edit', path=path))
 
 
 def edit(path: str):
@@ -262,7 +260,9 @@ app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 def upload() -> Flask:
     app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
-    app.add_url_rule('/newfile', view_func=newfile, methods=['GET', 'POST'])
+    app.add_url_rule('/newfile/<path:path>',
+                     view_func=newfile,
+                     methods=['GET'])
     app.add_url_rule('/edit/<path:path>',
                      view_func=edit,
                      methods=['GET', 'POST'])

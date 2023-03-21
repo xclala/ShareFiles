@@ -35,6 +35,10 @@
         {% endblock %}
     </form>
     <div id="filelist">
+        {% block newfile %}
+        <button onclick="newfile()">新建文件</button>
+        {% endblock %}
+        <p></p>
         {% for fl in filelist %}
         <a href="/filelist/{{ filepath }}{{ fl }}">{{ fl }}</a>
         <a href="/edit/{{ filepath }}{{ fl }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;编辑</a>

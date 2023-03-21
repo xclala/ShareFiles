@@ -14,3 +14,9 @@ document.getElementsByTagName("h1")[0].onclick = function () {
     }
     c++
 }
+function newfile() {
+    let filepath = prompt("文件路径：")
+    if (filepath != null){
+        window.location.href = `/newfile/${filepath}`
+    }
+}

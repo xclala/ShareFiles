@@ -63,6 +63,8 @@ else:
     var1: IntVar = IntVar()
     var2: IntVar = IntVar()
     pw_temp: StringVar = StringVar()
+    var1.set(1)
+    var2.set(1)
     Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
     Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
     if not file_can_be_deleted:

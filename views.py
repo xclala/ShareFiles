@@ -172,7 +172,7 @@ def delete_file(filepath: str):
 
 
 def newfile(path: str):
-    filepath: Path = app.config['dir'] / (request.form['filepath']).replace(
+    filepath: Path = app.config['dir'] / path.replace(
         "..", "")
     try:
         filepath.touch(exist_ok=False)

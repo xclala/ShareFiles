@@ -1,15 +1,6 @@
 {% extends "base.html" %}
 {%- block title -%}上传文件{%- endblock -%}
 {% block logic %}
-<script>
-    function newfile() {
-        let filepath = prompt("文件路径：")
-        if (filepath != null){
-            window.location.href = `/newfile/${filepath}`
-        }
-    }
-</script>
-<button onclick="newfile()">新建文件</button>
 <p></p>
 <input type="file" name="file" multiple="multiple">
 <input type="submit" value="确定">

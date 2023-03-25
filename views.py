@@ -114,8 +114,7 @@ def upload_view():
             flash("文件成功上传！")
         if app.config['mode'] == 'upload':
             return render_template('upload.html')
-        for filename in app.config['dir'].iterdir():
-            secure_rename(Path(filename))
+        secure_rename(app.config['dir'])
         fl = (i.relative_to(app.config['dir'])
               for i in app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl, title="共享文件")
@@ -139,8 +138,7 @@ def filelist(filepath: str):
                                        path,
                                        as_attachment=True)
         if path.is_dir():
-            for filename in path.iterdir():
-                secure_rename(Path(filename))
+            secure_rename(path)
             fl = (i.relative_to(path) for i in path.iterdir())
             return render_template("download.html",
                                    filelist=fl,
@@ -246,12 +244,19 @@ def is_binary_file(filepath: str | Path) -> bool:
     return False
 
 
-def secure_rename(filepath: Path):
-    try:
-        if filepath.is_file():
-            filepath.rename(filepath.parent / secure_filename(filepath.name))
-    except FileExistsError:
-        filepath.rename(uuid4().hex + filepath.suffix)
+def secure_rename(dirpath: Path):
+    """遍历dirpath，将其文件名送入secure_filename()，并将文件名更改为secure_filename()的返回值。
+    在windows中，$RECYCLE.BIN会被忽略。
+    """
+    import os
+    for i in dirpath.iterdir():
+        if os.name != 'nt' or i != '$RECYCLE.BIN':
+            filepath: Path = Path(i)
+            try:
+                if filepath.is_file():
+                    filepath.rename(filepath.parent / secure_filename(filepath.name))
+            except FileExistsError:
+                filepath.rename(uuid4().hex + filepath.suffix)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])

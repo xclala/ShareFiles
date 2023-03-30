@@ -89,7 +89,7 @@ else:
 if port is None or port <= 0 or port >= 65535:
     port = 80
 if threads is None or threads <= 0:
-    threads = 4
+    threads = 6
 
 if mode == 'upload':
     if port == 80:

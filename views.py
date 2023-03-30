@@ -83,7 +83,7 @@ def login():
     if session.get("password") == app.config['password']:
         if app.config['mode'] == 'download':
             return redirect(url_for('filelist', filepath=''))
-        return redirect(url_for('upload_view'))
+        return redirect(url_for('upload'))
     if request.method == 'POST':
         if request.form['passwd'] == app.config['password']:
             if request.form['session-lifetime'] != 'default':
@@ -93,13 +93,13 @@ def login():
             session['password'] = request.form['passwd']
             if app.config['mode'] == 'download':
                 return redirect(url_for('filelist', filepath=''))
-            return redirect(url_for('upload_view'))
+            return redirect(url_for('upload'))
         else:
             flash("密码错误！")
     return render_template('login.html')
 
 
-def upload_view():
+def upload():
     try:
         if request.method == 'POST':
             for f in request.files.getlist('file'):
@@ -151,7 +151,7 @@ def filelist(filepath: str):
 def delete_file(filepath: str):
     #之后实现回收站
     from shutil import rmtree
-    if app.config['file_can_be_deleted']:
+    if app.config['delete_permission']:
         try:
             p: Path = app.config['dir'] / filepath.replace("..", "")
             if p.is_file():
@@ -263,8 +263,8 @@ app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])
 app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
-def upload() -> Flask:
-    app.add_url_rule('/upload', view_func=upload_view, methods=['GET', 'POST'])
+def register_upload() -> Flask:
+    app.add_url_rule('/upload', view_func=upload, methods=['GET', 'POST'])
     app.add_url_rule('/newfile/<path:path>',
                      view_func=newfile,
                      methods=['GET'])
@@ -274,7 +274,7 @@ def upload() -> Flask:
     return app
 
 
-def download() -> Flask:
+def register_download() -> Flask:
     app.add_url_rule("/filelist/",
                      view_func=lambda: filelist(''),
                      methods=['GET'])

@@ -3,7 +3,7 @@ from tkinter.filedialog import askdirectory
 from pathlib import Path
 from argparse import ArgumentParser
 from tkinter.messagebox import showinfo
-from views import upload, download
+from views import register_upload, register_download
 from waitress import serve
 from platform import python_version_tuple
 
@@ -18,7 +18,7 @@ parser.add_argument('--upload', action="store_true")
 parser.add_argument('--download', action="store_true")
 parser.add_argument('--debug', action="store_true")
 parser.add_argument('--file_can_be_deleted', action="store_true")
-file_can_be_deleted: bool | BooleanVar = parser.parse_args(
+delete_permission: bool | BooleanVar = parser.parse_args(
 ).file_can_be_deleted
 debug_mode: bool = parser.parse_args().debug
 port: int = parser.parse_args().port
@@ -30,7 +30,6 @@ elif parser.parse_args().upload:
 elif parser.parse_args().download:
     mode: str = 'download'
 else:
-
     def ask_dir():
         global dir
         path: str = askdirectory()
@@ -67,11 +66,11 @@ else:
     var2.set(1)
     Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
     Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
-    if not file_can_be_deleted:
-        file_can_be_deleted = BooleanVar()
+    if not delete_permission:
+        delete_permission = BooleanVar()
         Checkbutton(root,
                     text="允许他人删除“共享的文件”文件夹中的文件",
-                    variable=file_can_be_deleted).pack()
+                    variable=delete_permission).pack()
     Label(text="密码：").pack()
     Entry(textvariable=pw_temp, show="*").pack()
     Label(text="文件夹：").pack()
@@ -96,22 +95,24 @@ if mode == 'upload':
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改{dir}")
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改{dir}")
-    app = upload()
+    app = register_upload()
 elif mode == 'download':
     if port == 80:
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人访问{dir}")
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问{dir}")
-    app = download()
-    app.config['file_can_be_deleted'] = file_can_be_deleted.get()
+    app = register_download()
+    if delete_permission is None:
+        app.config['delete_permission'] = delete_permission.get()
 else:
     if port == 80:
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改和访问{dir}")
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问{dir}")
-    upload()
-    app = download()
-    app.config['file_can_be_deleted'] = file_can_be_deleted.get()
+    register_upload()
+    app = register_download()
+    if delete_permission is None:
+        app.config['delete_permission'] = delete_permission.get()
 if dir == Path():
     dir = Path("共享的文件")
 app.config['dir'] = dir

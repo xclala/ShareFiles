@@ -81,7 +81,7 @@ def is_login():
 
 def login():
     if session.get("password") == app.config['password']:
-        if app.config['mode'] == 'download':
+        if app.config['download']:
             return redirect(url_for('filelist', filepath=''))
         return redirect(url_for('upload'))
     if request.method == 'POST':
@@ -91,7 +91,7 @@ def login():
                 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                     days=int(request.form['session-lifetime']))
             session['password'] = request.form['passwd']
-            if app.config['mode'] == 'download':
+            if app.config['download']:
                 return redirect(url_for('filelist', filepath=''))
             return redirect(url_for('upload'))
         else:
@@ -112,7 +112,7 @@ def upload():
                 else:
                     f.save(path)
             flash("文件成功上传！")
-        if app.config['mode'] == 'upload':
+        if app.config['upload']:
             return render_template('upload.html')
         secure_rename(app.config['dir'])
         fl = (i.relative_to(app.config['dir'])
@@ -185,7 +185,7 @@ def newfile(path: str):
 
 def edit(path: str):
     try:
-        if app.config['mode'] == 'upload':
+        if app.config['upload']:
             raise PermissionError
         filepath: Path = app.config['dir'] / path.replace('..', '')
         if not filepath.is_file():

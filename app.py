@@ -23,13 +23,9 @@ delete_permission: bool | BooleanVar = parser.parse_args(
 debug_mode: bool = parser.parse_args().debug
 port: int = parser.parse_args().port
 threads: int = parser.parse_args().thread
-if parser.parse_args().upload and parser.parse_args().download:
-    mode: str = 'upload_download'
-elif parser.parse_args().upload:
-    mode: str = 'upload'
-elif parser.parse_args().download:
-    mode: str = 'download'
-else:
+upload: bool = parser.parse_args().upload
+download: bool = parser.parse_args().download
+if not parser.parse_args().upload and not parser.parse_args().download:
     def ask_dir():
         global dir
         path: str = askdirectory()
@@ -59,11 +55,11 @@ else:
         t.pack()
         t.insert(0, "6")
         threads = int(t.get())
-    var1: IntVar = IntVar()
-    var2: IntVar = IntVar()
+    var1: BooleanVar = BooleanVar()
+    var2: BooleanVar = BooleanVar()
     pw_temp: StringVar = StringVar()
-    var1.set(1)
-    var2.set(1)
+    var1.set(True)
+    var2.set(True)
     Checkbutton(root, text="允许他人更改“共享的文件”文件夹", variable=var1).pack()
     Checkbutton(root, text="允许他人访问“共享的文件”文件夹", variable=var2).pack()
     if not delete_permission:
@@ -77,26 +73,20 @@ else:
     Button(root, text="选择文件夹", command=ask_dir).pack()
     Button(root, text="确定", command=root.destroy).pack()
     mainloop()
-    if var1.get() == 1 and var2.get() == 1:
-        mode = 'upload_download'
-    elif var1.get() == 1:
-        mode = 'upload'
-    elif var2.get() == 1:
-        mode = 'download'
-    else:
-        mode = 'upload_download'
+    upload: bool = var1.get()
+    download: bool = var2.get()
 if port is None or port <= 0 or port >= 65535:
     port = 80
 if threads is None or threads <= 0:
     threads = 6
 
-if mode == 'upload':
+if upload:
     if port == 80:
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改{dir}")
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改{dir}")
     app = register_upload()
-elif mode == 'download':
+if download:
     if port == 80:
         showinfo("", f"在浏览器中输入您的ip地址即可允许他人访问{dir}")
     else:
@@ -104,19 +94,11 @@ elif mode == 'download':
     app = register_download()
     if delete_permission is None:
         app.config['delete_permission'] = delete_permission.get()
-else:
-    if port == 80:
-        showinfo("", f"在浏览器中输入您的ip地址即可允许他人更改和访问{dir}")
-    else:
-        showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人更改和访问{dir}")
-    register_upload()
-    app = register_download()
-    if delete_permission is None:
-        app.config['delete_permission'] = delete_permission.get()
 if dir == Path():
     dir = Path("共享的文件")
 app.config['dir'] = dir
-app.config['mode'] = mode
+app.config['upload'] = upload
+app.config['download'] = download
 app.config['password'] = pw_temp.get()
 if debug_mode:
     app.run(port=port, debug=True, use_debugger=True, use_reloader=False)

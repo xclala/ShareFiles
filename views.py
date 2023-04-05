@@ -4,7 +4,7 @@ from secrets import token_urlsafe
 from uuid import uuid4
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Iterable, Literal
 
 app: Flask = Flask(__name__)
 app.config['SECRET_KEY'] = token_urlsafe(64)
@@ -102,7 +102,8 @@ def login():
 def upload():
     try:
         if request.method == 'POST':
-            for f in request.files.getlist('file'):
+
+            def save_files(f):
                 if not f.filename:
                     flash("请先选择文件！")
                     return render_template("upload.html")
@@ -111,12 +112,14 @@ def upload():
                     f.save(app.config['dir'] / uuid4().hex + path.suffix)
                 else:
                     f.save(path)
+
+            map(save_files, request.files.getlist('file'))
             flash("文件成功上传！")
         if app.config['upload']:
             return render_template('upload.html')
         secure_rename(app.config['dir'])
-        fl = (i.relative_to(app.config['dir'])
-              for i in app.config['dir'].iterdir())
+        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']),
+                           app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl, title="共享文件")
     except PermissionError:
         flash("权限不足！")
@@ -139,7 +142,7 @@ def filelist(filepath: str):
                                        as_attachment=True)
         if path.is_dir():
             secure_rename(path)
-            fl = (i.relative_to(path) for i in path.iterdir())
+            fl: Iterable = map(lambda p: p.relative_to(path), path.iterdir())
             return render_template("download.html",
                                    filelist=fl,
                                    filepath=filepath.replace("..", ""))
@@ -170,8 +173,7 @@ def delete_file(filepath: str):
 
 
 def newfile(path: str):
-    filepath: Path = app.config['dir'] / path.replace(
-        "..", "")
+    filepath: Path = app.config['dir'] / path.replace("..", "")
     try:
         filepath.touch(exist_ok=False)
     except PermissionError:
@@ -225,7 +227,7 @@ def encoding(filepath: Path) -> Optional[str]:
 def is_binary_file(filepath: str | Path) -> bool:
     filepath = str(filepath)
     import codecs
-    _TEXT_BOMS: tuple[str, ...] = (
+    _TEXT_BOMS: tuple[Literal, Literal, Literal, Literal, Literal] = (
         codecs.BOM_UTF16_BE,
         codecs.BOM_UTF16_LE,
         codecs.BOM_UTF32_BE,
@@ -249,14 +251,15 @@ def secure_rename(dirpath: Path):
     在windows中，$RECYCLE.BIN会被忽略。
     """
     import os
-    for i in dirpath.iterdir():
-        if os.name != 'nt' or i != '$RECYCLE.BIN':
-            filepath: Path = Path(i)
-            try:
-                if filepath.is_file():
-                    filepath.rename(filepath.parent / secure_filename(filepath.name))
-            except FileExistsError:
-                filepath.rename(uuid4().hex + filepath.suffix)
+    a: Iterable = filter(lambda i: os.name != 'nt' or i != '$RECYCLE.BIN',
+                         dirpath.iterdir())
+    b: Iterable = map(Path, a)
+    c: Iterable = filter(lambda p: p.is_file(), b)
+    for filepath in c:
+        try:
+            filepath.rename(filepath.parent / secure_filename(filepath.name))
+        except FileExistsError:
+            filepath.rename(uuid4().hex + filepath.suffix)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])

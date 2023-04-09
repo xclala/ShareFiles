@@ -42,7 +42,7 @@
         {% for fl in filelist %}
         <a href="/filelist/{{ filepath }}{{ fl }}">{{ fl }}</a>
         <a href="/edit/{{ filepath }}{{ fl }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;编辑</a>
-        <a href="/delete/{{ filepath }}{{ fl }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;删除<br></a>
+        <a onclick="Delete('{{ filepath }}', '{{ fl }}')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;删除<br></a>
         <p></p>
         {% endfor %}
     </div>

@@ -117,7 +117,7 @@ def upload():
             flash("文件成功上传！")
         if app.config['upload']:
             return render_template('upload.html')
-        secure_rename(app.config['dir'])
+        map(secure_rename, app.config['dir'].iterdir())
         fl: Iterable = map(lambda p: p.relative_to(app.config['dir']),
                            app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl, title="共享文件")
@@ -141,7 +141,7 @@ def filelist(filepath: str):
                                        path,
                                        as_attachment=True)
         if path.is_dir():
-            secure_rename(path)
+            map(secure_rename, path.iterdir())
             fl: Iterable = map(lambda p: p.relative_to(path), path.iterdir())
             return render_template("download.html",
                                    filelist=fl,
@@ -152,21 +152,25 @@ def filelist(filepath: str):
 
 
 def delete_file(filepath: str):
-    #之后实现回收站
-    from shutil import rmtree
     if app.config['delete_permission']:
+        p: Path = app.config['dir'] / filepath.replace("..", "")
         try:
-            p: Path = app.config['dir'] / filepath.replace("..", "")
+            from win32com.shell import shell, shellcon
+            shell.SHFileOperation(
+                (0, shellcon.FO_DELETE, str(p), None, shellcon.FOF_SILENT
+                 | shellcon.FOF_ALLOWUNDO | shellcon.FOF_NOCONFIRMATION))
+        except PermissionError:
+            flash("你没有删除文件的权限！")
+        except:
             if p.is_file():
                 p.unlink()
                 flash("文件成功删除！")
             elif p.is_dir():
+                from shutil import rmtree
                 rmtree(p)
                 flash("目录成功删除！")
             else:
                 flash("文件不存在！")
-        except PermissionError:
-            flash("你没有删除文件的权限！")
     else:
         flash("你没有删除文件的权限！")
     return redirect("/")
@@ -246,18 +250,16 @@ def is_binary_file(filepath: str | Path) -> bool:
     return False
 
 
-def secure_rename(dirpath: Path):
-    """遍历dirpath，将其文件名送入secure_filename()，并将文件名更改为secure_filename()的返回值。
+def secure_rename(filepath: Path):
+    import os
+    """将文件名送入secure_filename()，并将文件名更改为secure_filename()的返回值。
     在windows中，$RECYCLE.BIN会被忽略。
     """
-    import os
-    a: Iterable = filter(lambda i: os.name != 'nt' or i != '$RECYCLE.BIN',
-                         dirpath.iterdir())
-    b: Iterable = map(Path, a)
-    c: Iterable = filter(lambda p: p.is_file(), b)
-    for filepath in c:
+    if os.name != 'nt' or filepath != '$RECYCLE.BIN':
         try:
-            filepath.rename(filepath.parent / secure_filename(filepath.name))
+            if filepath.is_file():
+                filepath.rename(filepath.parent /
+                                secure_filename(filepath.name))
         except FileExistsError:
             filepath.rename(uuid4().hex + filepath.suffix)
 

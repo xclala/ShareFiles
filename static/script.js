@@ -20,3 +20,8 @@ function newfile() {
         window.location.href = `/newfile/${filepath}`
     }
 }
+function Delete(fp, fl) {
+    if (confirm("你确定要删除文件吗？") == true){
+        window.location.href = `/delete/${fp}${fl}`
+    }
+}

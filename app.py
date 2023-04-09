@@ -92,8 +92,7 @@ if download:
     else:
         showinfo("", f"在浏览器中输入您的ip地址:{port}即可允许他人访问{dir}")
     app = register_download()
-    if delete_permission is None:
-        app.config['delete_permission'] = delete_permission.get()
+    app.config['delete_permission'] = delete_permission.get()
 if dir == Path():
     dir = Path("共享的文件")
 app.config['dir'] = dir

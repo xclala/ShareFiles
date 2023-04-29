@@ -81,7 +81,7 @@ def is_login():
 
 def login():
     if session.get("password") == app.config['password']:
-        if app.config['download']:
+        if app.config['download'] and not app.config['upload']:
             return redirect(url_for('filelist', filepath=''))
         return redirect(url_for('upload'))
     if request.method == 'POST':
@@ -91,7 +91,7 @@ def login():
                 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                     days=int(request.form['session-lifetime']))
             session['password'] = request.form['passwd']
-            if app.config['download']:
+            if app.config['download'] and not app.config['upload']:
                 return redirect(url_for('filelist', filepath=''))
             return redirect(url_for('upload'))
         else:
@@ -102,25 +102,23 @@ def login():
 def upload():
     try:
         if request.method == 'POST':
-
-            def save_files(f):
-                if not f.filename:
-                    flash("请先选择文件！")
-                    return render_template("upload.html")
-                path: Path = app.config['dir'] / secure_filename(f.filename)
-                if path.exists():
-                    f.save(app.config['dir'] / uuid4().hex + path.suffix)
-                else:
-                    f.save(path)
-
-            map(save_files, request.files.getlist('file'))
-            flash("文件成功上传！")
-        if app.config['upload']:
+            upload_files_list: list = request.files.getlist('file')
+            if upload_files_list[0].filename:
+                for f in upload_files_list:
+                    path: Path = app.config['dir'] / secure_filename(f.filename)
+                    if path.exists():
+                        f.save(app.config['dir'] / uuid4().hex + path.suffix)
+                    else:
+                        f.save(path)
+                flash("文件成功上传！")
+            else:
+                flash("请先选择文件！")
+                return render_template("upload.html")
+        if app.config['upload'] and not app.config['download']:
             return render_template('upload.html')
         map(secure_rename, app.config['dir'].iterdir())
-        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']),
-                           app.config['dir'].iterdir())
-        return render_template('upload.html', filelist=fl, title="共享文件")
+        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']), app.config['dir'].iterdir())
+        return render_template('upload.html', filelist=fl)
     except PermissionError:
         flash("权限不足！")
         return render_template("upload.html")
@@ -137,9 +135,7 @@ def filelist(filepath: str):
     try:
         path: Path = app.config['dir'] / filepath.replace("..", "")
         if path.is_file():
-            return send_from_directory(app.config['dir'],
-                                       path,
-                                       as_attachment=True)
+            return send_from_directory(app.config['dir'], path, as_attachment=True)
         if path.is_dir():
             map(secure_rename, path.iterdir())
             fl: Iterable = map(lambda p: p.relative_to(path), path.iterdir())
@@ -203,15 +199,13 @@ def edit(path: str):
             if secure_filename(Path(request.form['filepath']).name):
                 filepath.rename(app.config['dir'] /
                                 (request.form['filepath']).replace("..", ""))
-                filepath = app.config['dir'] / (
-                    request.form['filepath']).replace("..", "")
+                filepath = app.config['dir'] / (request.form['filepath']).replace("..", "")
             else:
                 flash("请输入正确的路径！")
                 return render_template('edit.html',
                                        filepath=filepath,
                                        file_content=file_content)
-            path: Path = app.config['dir'] / request.form['filepath'].replace(
-                "..", "")
+            path: Path = app.config['dir'] / request.form['filepath'].replace("..", "")
             path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
         return render_template('edit.html',

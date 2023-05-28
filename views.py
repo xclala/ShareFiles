@@ -105,7 +105,8 @@ def upload():
             upload_files_list: list = request.files.getlist('file')
             if upload_files_list[0].filename:
                 for f in upload_files_list:
-                    path: Path = app.config['dir'] / secure_filename(f.filename)
+                    path: Path = app.config['dir'] / secure_filename(
+                        f.filename)
                     if path.exists():
                         f.save(app.config['dir'] / uuid4().hex + path.suffix)
                     else:
@@ -116,8 +117,9 @@ def upload():
                 return render_template("upload.html")
         if app.config['upload'] and not app.config['download']:
             return render_template('upload.html')
-        map(secure_rename, app.config['dir'].iterdir())
-        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']), app.config['dir'].iterdir())
+        secure_rename(app.config['dir'])
+        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']),
+                           app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl)
     except PermissionError:
         flash("权限不足！")
@@ -135,9 +137,11 @@ def filelist(filepath: str):
     try:
         path: Path = app.config['dir'] / filepath.replace("..", "")
         if path.is_file():
-            return send_from_directory(app.config['dir'], path, as_attachment=True)
+            return send_from_directory(app.config['dir'],
+                                       path,
+                                       as_attachment=True)
         if path.is_dir():
-            map(secure_rename, path.iterdir())
+            secure_rename(path)
             fl: Iterable = map(lambda p: p.relative_to(path), path.iterdir())
             return render_template("download.html",
                                    filelist=fl,
@@ -199,13 +203,15 @@ def edit(path: str):
             if secure_filename(Path(request.form['filepath']).name):
                 filepath.rename(app.config['dir'] /
                                 (request.form['filepath']).replace("..", ""))
-                filepath = app.config['dir'] / (request.form['filepath']).replace("..", "")
+                filepath = app.config['dir'] / (
+                    request.form['filepath']).replace("..", "")
             else:
                 flash("请输入正确的路径！")
                 return render_template('edit.html',
                                        filepath=filepath,
                                        file_content=file_content)
-            path: Path = app.config['dir'] / request.form['filepath'].replace("..", "")
+            path: Path = app.config['dir'] / request.form['filepath'].replace(
+                "..", "")
             path.write_text(request.form['content'], encoding(filepath))
             return redirect('/')
         return render_template('edit.html',
@@ -244,16 +250,15 @@ def is_binary_file(filepath: str | Path) -> bool:
     return False
 
 
-def secure_rename(filepath: Path):
-    import os
+def secure_rename(path: Path):
     """将文件名送入secure_filename()，并将文件名更改为secure_filename()的返回值。
-    在windows中，$RECYCLE.BIN会被忽略。
+    $RECYCLE.BIN会被忽略。
     """
-    if os.name != 'nt' or filepath != '$RECYCLE.BIN':
+    iter: Iterable = filter(lambda a: a != '$RECYCLE.BIN' and a.is_file(),
+                            path.iterdir())
+    for filepath in iter:
         try:
-            if filepath.is_file():
-                filepath.rename(filepath.parent /
-                                secure_filename(filepath.name))
+            filepath.rename(filepath.parent / secure_filename(filepath.name))
         except FileExistsError:
             filepath.rename(uuid4().hex + filepath.suffix)
 

@@ -8,7 +8,7 @@ from waitress import serve
 from platform import python_version_tuple
 
 assert python_version_tuple()[0] == '3' and int(
-    python_version_tuple()[1]) > 10, "python版本太低，无法运行"
+    python_version_tuple()[1]) > 6, "python版本太低，无法运行"
 
 parser: ArgumentParser = ArgumentParser()
 parser.add_argument('--port', type=int)

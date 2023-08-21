@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, session, abort, send_from_directory, flash, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from secrets import token_urlsafe
-from uuid import uuid4
 from datetime import timedelta
 from pathlib import Path
 from typing import Optional, Iterable, Literal
@@ -63,7 +62,7 @@ def secure_filename(filename: str | Path | None) -> str:
     if filename:
         return filename
     else:
-        return uuid4().hex
+        return token_urlsafe(5)
 
 
 @app.before_request
@@ -108,7 +107,7 @@ def upload():
                     path: Path = app.config['dir'] / secure_filename(
                         f.filename)
                     if path.exists():
-                        f.save(app.config['dir'] / uuid4().hex + path.suffix)
+                        f.save(app.config['dir'] / token_urlsafe(5) + path.suffix)
                     else:
                         f.save(path)
                 flash("文件成功上传！")
@@ -118,8 +117,7 @@ def upload():
         if app.config['upload'] and not app.config['download']:
             return render_template('upload.html')
         secure_rename(app.config['dir'])
-        fl: Iterable = map(lambda p: p.relative_to(app.config['dir']),
-                           app.config['dir'].iterdir())
+        fl: Iterable = map(lambda p: p.name, app.config['dir'].iterdir())
         return render_template('upload.html', filelist=fl)
     except PermissionError:
         flash("权限不足！")
@@ -142,7 +140,7 @@ def filelist(filepath: str):
                                        as_attachment=True)
         if path.is_dir():
             secure_rename(path)
-            fl: Iterable = map(lambda p: p.relative_to(path), path.iterdir())
+            fl: Iterable = map(lambda p: p.name, path.iterdir())
             return render_template("download.html",
                                    filelist=fl,
                                    filepath=filepath.replace("..", ""))
@@ -260,7 +258,7 @@ def secure_rename(path: Path):
         try:
             filepath.rename(filepath.parent / secure_filename(filepath.name))
         except FileExistsError:
-            filepath.rename(uuid4().hex + filepath.suffix)
+            filepath.rename(token_urlsafe(5) + filepath.suffix)
 
 
 app.add_url_rule('/', view_func=login, methods=['GET', 'POST'])

@@ -1,4 +1,4 @@
-from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, IntVar, BooleanVar, Checkbutton
+from tkinter import Tk, mainloop, Entry, Button, Label, StringVar, BooleanVar, Checkbutton
 from tkinter.filedialog import askdirectory
 from pathlib import Path
 from argparse import ArgumentParser
@@ -11,8 +11,8 @@ assert python_version_tuple()[0] == '3' and int(
     python_version_tuple()[1]) > 6, "python版本太低，无法运行"
 
 parser: ArgumentParser = ArgumentParser()
-parser.add_argument('--port', type=int)
-parser.add_argument('--thread', type=int)
+parser.add_argument('--port', type=int, choices=range(1,65536))
+parser.add_argument('--thread', type=int, choices=range(1,30))
 parser.add_argument('--path', type=str)
 parser.add_argument('--upload', action="store_true")
 parser.add_argument('--download', action="store_true")

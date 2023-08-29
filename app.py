@@ -55,8 +55,9 @@ if not delete_permission:
     Checkbutton(text="允许他人删除“共享的文件”文件夹中的文件",
                 variable=delete_permission).pack()
 Label(text="密码：").pack()
-password = Entry(show="*")
+password: Entry = Entry(show="*")
 password.pack()
+pw: str = password.get()
 if dir is None:
     Label(text="文件夹：").pack()
     Entry(textvariable=path_temp).pack()
@@ -92,7 +93,7 @@ else:
         ...
     directory: Path = Path("共享的文件")
 app.config['dir'] = directory
-app.config['password'] = password.get()
+app.config['password'] = pw
 if debug_mode:
     app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
 else:

@@ -266,6 +266,7 @@ app.add_url_rule('/del_session', view_func=delete_session, methods=['GET'])
 
 
 def register_upload() -> Flask:
+    app.config['upload'] = True
     app.add_url_rule('/upload', view_func=upload, methods=['GET', 'POST'])
     app.add_url_rule('/newfile/<path:path>',
                      view_func=newfile,
@@ -277,6 +278,7 @@ def register_upload() -> Flask:
 
 
 def register_download() -> Flask:
+    app.config['download'] = True
     app.add_url_rule("/filelist/",
                      view_func=lambda: filelist(''),
                      methods=['GET'])

@@ -12,7 +12,7 @@ assert python_version_tuple()[0] == '3' and int(
 
 parser: ArgumentParser = ArgumentParser()
 parser.add_argument('--port', type=int, choices=range(1,65536))
-parser.add_argument('--thread', type=int, choices=range(1,30))
+parser.add_argument('--threads', type=int, choices=range(1,30))
 parser.add_argument('--path', type=str)
 parser.add_argument('--upload', action="store_true")
 parser.add_argument('--download', action="store_true")
@@ -21,7 +21,7 @@ parser.add_argument('--file_can_be_deleted', action="store_true")
 delete_permission: bool | BooleanVar = parser.parse_args().file_can_be_deleted
 debug_mode: bool = parser.parse_args().debug
 port: int = parser.parse_args().port
-threads: int = parser.parse_args().thread
+threads: int = parser.parse_args().threads
 dir: str = parser.parse_args().path
 upload: bool = parser.parse_args().upload
 download: bool = parser.parse_args().download
@@ -42,23 +42,21 @@ if threads is None:
     t.pack()
     t.insert(0, "6")
     threads = int(t.get())
-upload_temp: BooleanVar = BooleanVar()
-download_temp: BooleanVar = BooleanVar()
-pw_temp: StringVar = StringVar()
+upload_temp: BooleanVar = BooleanVar(root, True)
+download_temp: BooleanVar = BooleanVar(root, True)
 path_temp: StringVar = StringVar()
-upload_temp.set(True)
-download_temp.set(True)
-if not parser.parse_args().upload and not parser.parse_args().download:
+if not upload and not download:
     Checkbutton(text="允许他人更改“共享的文件”文件夹", variable=upload_temp).pack()
     Checkbutton(text="允许他人访问“共享的文件”文件夹", variable=download_temp).pack()
     upload: bool = upload_temp.get()
     download: bool = download_temp.get()
 if not delete_permission:
-    delete_permission = BooleanVar()
+    delete_permission = BooleanVar(root, False)
     Checkbutton(text="允许他人删除“共享的文件”文件夹中的文件",
                 variable=delete_permission).pack()
 Label(text="密码：").pack()
-Entry(textvariable=pw_temp, show="*").pack()
+password = Entry(show="*")
+password.pack()
 if dir is None:
     Label(text="文件夹：").pack()
     Entry(textvariable=path_temp).pack()
@@ -94,9 +92,7 @@ else:
         ...
     directory: Path = Path("共享的文件")
 app.config['dir'] = directory
-app.config['upload'] = upload
-app.config['download'] = download
-app.config['password'] = pw_temp.get()
+app.config['password'] = password.get()
 if debug_mode:
     app.run(port=port, debug=True, use_debugger=True, use_reloader=False)
 else:
